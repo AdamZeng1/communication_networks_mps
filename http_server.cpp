@@ -15,9 +15,23 @@
 #include <sys/wait.h>
 #include <signal.h>
 
-#define PORT "3490"  // the port users will be connecting to
+#include "http_server.h"
+#include <iostream>
 
+#define PORT "3490"  // the port users will be connecting to
 #define BACKLOG 10	 // how many pending connections queue will hold
+
+#define MAXDATASIZE 100
+
+using namespace std;
+
+INFO::INFO(){
+	message_num = 5;
+}
+
+void INFO::print_message_num(){
+	cout << this->message_num << endl;
+}
 
 void sigchld_handler(int s)
 {
@@ -44,6 +58,9 @@ int main(void)
 	int yes=1;
 	char s[INET6_ADDRSTRLEN];
 	int rv;
+	
+	int numbytes;
+	char buf[MAXDATASIZE];
 
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family = AF_UNSPEC;
@@ -100,6 +117,8 @@ int main(void)
 
 	printf("server: waiting for connections...\n");
 
+	
+
 	while(1) {  // main accept() loop
 		sin_size = sizeof their_addr;
 		new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
@@ -115,11 +134,16 @@ int main(void)
 
 		if (!fork()) { // this is the child process
 			close(sockfd); // child doesn't need the listener
-			if (send(new_fd, "Hello, world!", 13, 0) == -1)
-				perror("send");
+			
+			if ((numbytes = recv(new_fd, buf, MAXDATASIZE-1, 0))== -1){
+				perror("recv");
+			}
+			buf[numbytes] = '\0';
+			cout << "server received: \n" << buf << endl;
 			close(new_fd);
 			exit(0);
 		}
+	
 		close(new_fd);  // parent doesn't need this
 	}
 
