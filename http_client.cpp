@@ -12,6 +12,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <iostream>
+#include <fstream>
 
 #include <arpa/inet.h>
 
@@ -134,6 +135,7 @@ int main(int argc, char *argv[])
 	if (send(sockfd, request.c_str(), request.length(), 0) == -1){
 		perror("send");
 	}
+
 	string response = "";
 	while(1) {
 		if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) > 0)
@@ -141,10 +143,12 @@ int main(int argc, char *argv[])
 		else
 			break;
 	}
-
-	cout << "client received:" << response << endl;
-
 	close(sockfd);
 
+	ofstream file;
+	file.open("output");
+	file << response;
+	file.close();
+			
 	return 0;
 }
