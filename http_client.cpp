@@ -144,10 +144,39 @@ int main(int argc, char *argv[])
 			break;
 	}
 	close(sockfd);
+	int first_space, second_space;
+	string response_num = "";
+	if ((first_space = response.find(" ")) > 0){
+		second_space = response.find(" ", first_space + 1);
+		response_num.append( response.substr(first_space + 1, second_space - first_space - 1) );
+	}
+	else {
+		cout << "client: Invalid response" << endl;
+		return -1;
+	}
+
+	
+	if (response_num == "400") {
+		cout << "client: Bad Request" << endl;
+		return -1;
+	}
+	if (response_num == "404") {
+                cout << "client: Can't locate file" << endl;
+                return -1;
+        }
+
+
+	int file_index;
+	if ((file_index = response.find("\r\n\r\n")) > 0)
+		file_index += 4;
+	else {
+		cout << "client: File returned is invalid" << endl;
+		return -1;
+	}
 
 	ofstream file;
 	file.open("output");
-	file << response;
+	file << response.substr(file_index, response.length() - file_index);
 	file.close();
 			
 	return 0;
