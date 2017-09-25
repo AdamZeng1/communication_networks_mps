@@ -22,7 +22,6 @@
 #include <sstream> 
 #include <fstream>
 #include <streambuf>
-#include <thread>
 
 
 #define BACKLOG 10	 // how many pending connections queue will hold
