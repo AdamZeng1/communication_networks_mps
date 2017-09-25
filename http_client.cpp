@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
 	}
 	http_info_t header = parse_args(argv);
 	string request = "";
-        request.append("GET " + header.filename + " HTTP/1.1\r\n");
+        request.append("GET " + header.filename + " HTTP/1.1");
         //request.append("User-Agent: MP1/1\r\n");
         //request.append("Accept: /\r\n");
         //request.append("Accept-Encoding: ide\r\n");
