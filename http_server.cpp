@@ -176,6 +176,7 @@ int main(int argc, char *argv[])
 			if ((numbytes = recv(new_fd, buf, MAXDATASIZE-1, 0))== -1){
 				perror("recv");
 			}
+
 			buf[numbytes] = '\0';
 			Request * request = new Request(string(buf));
 			
@@ -187,7 +188,6 @@ int main(int argc, char *argv[])
 			cout << "user agent: " << request->get_user_agent() << endl;
 			cout << "host: " << request->get_host() << endl;*/
 
-			
 			string file_string = "";
 			string status_code = "";
 			ifstream req_file((request->get_filename()).c_str());
@@ -204,9 +204,13 @@ int main(int argc, char *argv[])
 			
 			string response = encode_response(status_code, request, file_string);
 			cout << response << endl;
+			
 
 			// send file + error code + other info back to client
-	
+
+			if (send(new_fd, (const void *)response.c_str(), response.size(), 0) == -1){
+				perror("send");
+			}
 			close(new_fd);
 			exit(0);
 		}

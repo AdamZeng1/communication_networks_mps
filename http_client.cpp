@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
 
 	buf[numbytes] = '\0';
 
-	printf("client: received '%s'\n",buf);
+	printf("client: received: \n %s",buf);
 
 	close(sockfd);
 
