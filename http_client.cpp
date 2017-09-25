@@ -89,11 +89,11 @@ int main(int argc, char *argv[])
 	http_info_t header = parse_args(argv);
 	string request = "";
         request.append("GET " + header.filename + " HTTP/1.1\r\n");
-        request.append("User-Agent: MP1/1\r\n");
-        request.append("Accept: /\r\n");
-        request.append("Accept-Encoding: ide\r\n");
-        request.append("Host: " + header.hostname + ":" + header.port + "\r\n");
-	request.append("\n\n");
+        //request.append("User-Agent: MP1/1\r\n");
+        //request.append("Accept: /\r\n");
+        //request.append("Accept-Encoding: ide\r\n");
+        //request.append("Host: " + header.hostname + ":" + header.port);
+	request.append("\r\n\r\n");
 	
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family = AF_UNSPEC;
@@ -141,10 +141,11 @@ int main(int argc, char *argv[])
 	while(1) {
 		if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) > 0)
 	    		response.append(buf, numbytes);
-		else
+		else{
 			break;
+		}
 	}
-	cout << "response:\n" << response << endl;
+	//cout << "response:\n" << response << endl;
 	close(sockfd);
 	int first_space, second_space;
 	string response_num = "";
