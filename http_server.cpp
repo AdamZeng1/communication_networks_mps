@@ -22,6 +22,7 @@
 #include <sstream> 
 #include <fstream>
 #include <streambuf>
+#include <thread>
 
 
 #define BACKLOG 10	 // how many pending connections queue will hold
@@ -92,6 +93,61 @@ string encode_response(string status_code, Request * request, string file_string
 	response.append(file_string + "\r\n");
 
 	return response;
+}
+
+void process_client_req(int sockfd, int new_fd, char buf[MAXDATASIZE], int numbytes){
+	if (!fork()) { // this is the child process
+		close(sockfd); // child doesn't need the listener
+		
+		if ((numbytes = recv(new_fd, buf, MAXDATASIZE-1, 0))== -1){
+			perror("recv");
+		}
+
+		buf[numbytes] = '\0';
+		Request * request = new Request(string(buf));
+		
+		// prints request class attributes
+		
+		cout << "request type: " << request->get_request_type() << endl;
+		cout << "filename: " << request->get_filename() << endl;
+		cout << "http protocol: " << request->get_http_protocol() << endl;
+		cout << "user agent: " << request->get_user_agent() << endl;
+		cout << "host: " << request->get_host() << endl;
+
+		string file_string = "";
+		string status_code = "";
+		string homepath = getenv("HOME");
+		string filepath = homepath + "/" + request->get_filename();
+		ifstream req_file(filepath.c_str());
+
+
+		// change status_code to 400 for bad request
+		// check request->filename, host, etc.
+
+		if (!req_file){
+			status_code = "404";
+		}
+		else{
+			stringstream file_stream;
+			file_stream << req_file.rdbuf();
+			file_string = file_stream.str();
+			status_code = "200";
+		}
+		
+		string response = encode_response(status_code, request, file_string);
+		cout << "RESPONSE: \n" << response << endl;
+		
+
+		// send file + error code + other info back to client
+
+		if (send(new_fd, (const void *)response.c_str(), response.size(), 0) == -1){
+			perror("send");
+		}
+		close(new_fd);
+		exit(0);
+	}
+	close(new_fd);
+	return;
 }
 
 int main(int argc, char *argv[])
@@ -170,7 +226,6 @@ int main(int argc, char *argv[])
 
 	printf("server: waiting for connections...\n");
 
-	
 
 	while(1) {  // main accept() loop
 		sin_size = sizeof their_addr;
@@ -185,6 +240,10 @@ int main(int argc, char *argv[])
 			s, sizeof s);
 		printf("server: got connection from %s\n", s);
 
+		thread t1(process_client_req, sockfd, new_fd, buf, numbytes);
+
+		t1.join();
+		/*
 		if (!fork()) { // this is the child process
 			close(sockfd); // child doesn't need the listener
 			
@@ -234,9 +293,9 @@ int main(int argc, char *argv[])
 			}
 			close(new_fd);
 			exit(0);
-		}
+		}*/
 	
-		close(new_fd);  // parent doesn't need this
+		//close(new_fd);  // parent doesn't need this
 	}
 
 	return 0;
