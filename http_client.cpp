@@ -92,7 +92,8 @@ int main(int argc, char *argv[])
         request.append("Accept: /\r\n");
         request.append("Accept-Encoding: ide\r\n");
         request.append("Host: " + header.hostname + ":" + header.port + "\r\n");
-
+	request.append("\n\n");
+	
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
@@ -133,15 +134,15 @@ int main(int argc, char *argv[])
 	if (send(sockfd, request.c_str(), request.length(), 0) == -1){
 		perror("send");
 	}
-
-	if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) == -1) {
-	    perror("recv");
-	    exit(1);
+	string response = "";
+	while(1) {
+		if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) > 0)
+	    		response.append(buf, numbytes);
+		else
+			break;
 	}
 
-	buf[numbytes] = '\0';
-
-	printf("client: received: \n%s\n",buf);
+	cout << "client received:" << response << endl;
 
 	close(sockfd);
 
