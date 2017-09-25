@@ -18,6 +18,12 @@
 #define MAXDATASIZE 100 // max number of bytes we can get at once 
 using namespace std;
 
+struct http_info_t {
+	string hostname;
+	string port;
+	string filename;
+};
+
 // get sockaddr, IPv4 or IPv6:
 void *get_in_addr(struct sockaddr *sa)
 {
@@ -28,7 +34,7 @@ void *get_in_addr(struct sockaddr *sa)
 	return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-string parse_args(char * argv[], string * port_ptr){
+http_info_t parse_args(char * argv[]){
 	string port = "80";
 	int colon_pos = 0, slash_pos = 0, hostname_end = 0;;
 	string filename = "", hostname = "";
@@ -54,19 +60,15 @@ string parse_args(char * argv[], string * port_ptr){
 	}
 	
 	hostname.append(arg.substr(7, hostname_end - 7));
-
+	
+	http_info_t output;
+	output.hostname = hostname;
+	output.port = port;
+	output.filename = filename;
 	cout << "hostname: " << hostname << endl;
 	cout << "port: " << port << endl;
 	cout << "filename: " << filename << endl;
 	
-	string output = "";
-	output.append("GET " + filename + " HTTP/1.1\r\n"); 
-	output.append("User-Agent: MP1/1\r\n");
-	output.append("Accept: /\r\n");
-	output.append("Accept-Encoding: ide\r\n");
-	output.append("Host: " + hostname + ":" + port + "\r\n");
-	
-	*port_ptr = port;
 	return output;
 }
 
@@ -83,14 +85,19 @@ int main(int argc, char *argv[])
 	    fprintf(stderr, "usage: client hostname[:port]/path/to/file\n");
 	    exit(1);
 	}
-	string header = parse_args(argv, &port);
-	cout << "header:\n" << header << endl;
-	cout << "port: " << port << endl;
+	http_info_t header = parse_args(argv);
+	string request = "";
+        request.append("GET " + header.filename + " HTTP/1.1\r\n");
+        request.append("User-Agent: MP1/1\r\n");
+        request.append("Accept: /\r\n");
+        request.append("Accept-Encoding: ide\r\n");
+        request.append("Host: " + header.hostname + ":" + header.port + "\r\n");
+
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 
-	if ((rv = getaddrinfo(argv[1], port.c_str(), &hints, &servinfo)) != 0) {
+	if ((rv = getaddrinfo(header.hostname.c_str(), header.port.c_str(), &hints, &servinfo)) != 0) {
 		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
 		return 1;
 	}
@@ -123,7 +130,7 @@ int main(int argc, char *argv[])
 
 	freeaddrinfo(servinfo); // all done with this structure
 	
-	if (send(sockfd, header.c_str(), header.length(), 0) == -1){
+	if (send(sockfd, request.c_str(), request.length(), 0) == -1){
 		perror("send");
 	}
 
