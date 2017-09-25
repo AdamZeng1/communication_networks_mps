@@ -132,8 +132,8 @@ int main(int argc, char *argv[])
 
 	freeaddrinfo(servinfo); // all done with this structure
 	
-	if (send(sockfd, request.c_str(), request.length(), 0) == -1){
-		perror("send");
+	if (send(sockfd, request.c_str(), request.length(), 0) == request.length()){
+		cout << "client: send error" << endl;
 	}
 
 	string response = "";
