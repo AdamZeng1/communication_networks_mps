@@ -16,22 +16,16 @@
 #include <signal.h>
 
 #include "http_server.h"
+#include "request.h"
 #include <iostream>
+#include <string> 
 
-#define PORT "3490"  // the port users will be connecting to
+
 #define BACKLOG 10	 // how many pending connections queue will hold
-
 #define MAXDATASIZE 100
 
 using namespace std;
 
-INFO::INFO(){
-	message_num = 5;
-}
-
-void INFO::print_message_num(){
-	cout << this->message_num << endl;
-}
 
 void sigchld_handler(int s)
 {
@@ -48,7 +42,7 @@ void *get_in_addr(struct sockaddr *sa)
 	return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
 	int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
 	struct addrinfo hints, *servinfo, *p;
@@ -61,6 +55,13 @@ int main(void)
 	
 	int numbytes;
 	char buf[MAXDATASIZE];
+
+	if(argc != 2){
+		exit(1);
+	}
+	
+	char * PORT = argv[1];
+	cout << "server will use port number: " << PORT << endl;
 
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family = AF_UNSPEC;
@@ -139,7 +140,11 @@ int main(void)
 				perror("recv");
 			}
 			buf[numbytes] = '\0';
-			cout << "server received: \n" << buf << endl;
+			Request * request = new Request(string(buf));
+			cout << "request type: " << request->get_request_type() << endl;
+			cout << "filename: " << request->get_filename() << endl;
+			cout << "http protocol: " << request->get_http_protocol() << endl;
+			cout << "user agent: " << request->get_user_agent() << endl;
 			close(new_fd);
 			exit(0);
 		}
