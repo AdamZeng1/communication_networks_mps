@@ -85,12 +85,10 @@ string encode_response(string status_code, Request * request, string file_string
 	response.append(request->get_http_protocol()+" "+status_code+" "+status_msg+"\r\n");
 	response.append(date + "\r\n");
 	response.append("Content-Length: " + to_string(file_string.size()) + "\r\n");
-	response.append("Content-Type: text/html\r\n");
-
-	response.append("\r\n");
+	response.append("Content-Type: text/html\r\n\r\n");
 
 	// form document
-	response.append(file_string + "\r\n");
+	response.append(file_string);
 
 	return response;
 }
