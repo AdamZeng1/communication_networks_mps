@@ -44,6 +44,40 @@ void *get_in_addr(struct sockaddr *sa)
 
 	return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
+string to_string(int i){
+    stringstream ss;
+    ss << i;
+    return ss.str();
+}
+
+string get_date(){
+ 	time_t now = time(0);
+   	char* dt = ctime(&now);
+	string date = (string)dt;
+	if (!date.empty() && date[date.length()-1] == '\n') {
+    		date.erase(date.length()-1);
+	}
+	return date;
+}
+
+string encode_response(string status_code, Request * request, string file_string){
+	string response = "";
+	string status_msg = "";
+	if (status_code == "200"){
+		status_msg = "OK";
+	}
+	else if (status_code == "404"){
+		status_msg = "NOT FOUND";
+	}
+	
+  
+	string date = "Date: " + get_date();
+
+	response.append(request->get_http_protocol()+" "+status_code+" "+status_msg+"\r\n");
+	response.append(date + "\r\n");
+	response.append(file_string + "\r\n");
+	return response;
+}
 
 int main(int argc, char *argv[])
 {
@@ -146,23 +180,30 @@ int main(int argc, char *argv[])
 			Request * request = new Request(string(buf));
 			
 			// prints request class attributes
+			/*
 			cout << "request type: " << request->get_request_type() << endl;
 			cout << "filename: " << request->get_filename() << endl;
 			cout << "http protocol: " << request->get_http_protocol() << endl;
 			cout << "user agent: " << request->get_user_agent() << endl;
-			cout << "host: " << request->get_host() << endl;
+			cout << "host: " << request->get_host() << endl;*/
 
+			
+			string file_string = "";
+			string status_code = "";
 			ifstream req_file((request->get_filename()).c_str());
+
 			if (req_file.in == 0){
-				error_code = "404";
+				status_code = "404";
 			}
 			else{
 				stringstream file_stream;
 				file_stream << req_file.rdbuf();
-				string file_string = file_stream.str();
-				cout << file_string << endl;
-				error_code = "200";
+				file_string = file_stream.str();
+				status_code = "200";
 			}
+			
+			string response = encode_response(status_code, request, file_string);
+			cout << response << endl;
 
 			// send file + error code + other info back to client
 	

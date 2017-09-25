@@ -26,7 +26,7 @@ string Request::find_filename(string buf){
 
 string Request::find_http_protocol(string buf){
 	int new_line_1_idx = buf.find("\n");
-	return buf.substr(second_space_idx+1, new_line_1_idx - second_space_idx - 1);
+	return buf.substr(second_space_idx+1, new_line_1_idx - second_space_idx - 1 - 1);
 }
 
 string Request::find_user_agent(string buf){
