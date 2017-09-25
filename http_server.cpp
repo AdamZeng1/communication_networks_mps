@@ -59,6 +59,10 @@ string get_date(){
 	}
 	return date;
 }
+string get_file_type(string filename){
+	int type_idx = filename.find(".");
+	return filename.substr(type_idx + 1);
+}
 
 string encode_response(string status_code, Request * request, string file_string){
 	string response = "";
@@ -67,15 +71,24 @@ string encode_response(string status_code, Request * request, string file_string
 		status_msg = "OK";
 	}
 	else if (status_code == "404"){
-		status_msg = "NOT FOUND";
+		status_msg = "Not Found";
 	}
 	
   
 	string date = "Date: " + get_date();
+	string file_type = get_file_type(request->get_filename());
 
+	// form header
 	response.append(request->get_http_protocol()+" "+status_code+" "+status_msg+"\r\n");
 	response.append(date + "\r\n");
+	response.append("Content-Length: " + to_string(file_string.size()) + "\r\n");
+	response.append("Content-Type: text/html\r\n");
+
+	response.append("\r\n");
+
+	// form document
 	response.append(file_string + "\r\n");
+
 	return response;
 }
 
@@ -181,18 +194,24 @@ int main(int argc, char *argv[])
 			Request * request = new Request(string(buf));
 			
 			// prints request class attributes
-			/*
+			
 			cout << "request type: " << request->get_request_type() << endl;
 			cout << "filename: " << request->get_filename() << endl;
 			cout << "http protocol: " << request->get_http_protocol() << endl;
 			cout << "user agent: " << request->get_user_agent() << endl;
-			cout << "host: " << request->get_host() << endl;*/
+			cout << "host: " << request->get_host() << endl;
 
 			string file_string = "";
 			string status_code = "";
-			ifstream req_file((request->get_filename()).c_str());
+			string homepath = getenv("HOME");
+			string filepath = homepath + "/" + request->get_filename();
+			ifstream req_file(filepath.c_str());
 
-			if (req_file.in == 0){
+
+			// change status_code to 400 for bad request
+			// check request->filename, host, etc.
+
+			if (!req_file){
 				status_code = "404";
 			}
 			else{
@@ -203,7 +222,7 @@ int main(int argc, char *argv[])
 			}
 			
 			string response = encode_response(status_code, request, file_string);
-			cout << response << endl;
+			cout << "RESPONSE: \n" << response << endl;
 			
 
 			// send file + error code + other info back to client
