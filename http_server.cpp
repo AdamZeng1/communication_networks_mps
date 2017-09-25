@@ -44,6 +44,7 @@ void *get_in_addr(struct sockaddr *sa)
 
 	return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
+
 string to_string(int i){
     stringstream ss;
     ss << i;
@@ -59,6 +60,7 @@ string get_date(){
 	}
 	return date;
 }
+
 string get_file_type(string filename){
 	int type_idx = filename.find(".");
 	return filename.substr(type_idx + 1);
