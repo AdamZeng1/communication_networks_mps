@@ -77,20 +77,20 @@ int main(int argc, char *argv[])
 	struct addrinfo hints, *servinfo, *p;
 	int rv;
 	char s[INET6_ADDRSTRLEN];
-	string * port;
+	string port = "80";
 
 	if (argc != 2) {
 	    fprintf(stderr, "usage: client hostname[:port]/path/to/file\n");
 	    exit(1);
 	}
-	string header = parse_args(argv, port);
+	string header = parse_args(argv, &port);
 	cout << "header:\n" << header << endl;
-	cout << "port: " << *port << endl;
+	cout << "port: " << port << endl;
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 
-	if ((rv = getaddrinfo(argv[1], (*port).c_str(), &hints, &servinfo)) != 0) {
+	if ((rv = getaddrinfo(argv[1], port.c_str(), &hints, &servinfo)) != 0) {
 		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
 		return 1;
 	}
