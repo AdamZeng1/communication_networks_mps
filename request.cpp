@@ -26,7 +26,7 @@ string Request::find_filename(string buf){
 
 string Request::find_http_protocol(string buf){
 	int new_line_1_idx = buf.find("\n");
-	return buf.substr(second_space_idx+1, new_line_1_idx - second_space_idx);
+	return buf.substr(second_space_idx+1, new_line_1_idx - second_space_idx - 1);
 }
 
 string Request::find_user_agent(string buf){
@@ -35,7 +35,7 @@ string Request::find_user_agent(string buf){
 		return "";
 	int start_idx = buf.find(" ", pre_idx);
 	int end_idx = buf.find("\n", start_idx + 1);
-	return buf.substr(start_idx + 1, end_idx - start_idx);
+	return buf.substr(start_idx + 1, end_idx - start_idx - 1);
 }
 
 string Request::find_host(string buf){
@@ -43,8 +43,8 @@ string Request::find_host(string buf){
 	if (pre_idx == -1)
 		return "";
 	int start_idx = buf.find(" ", pre_idx);
-	int end_idx = buf.find("\n", start_idx + 1);
-	return buf.substr(start_idx + 1, end_idx - start_idx);
+	int end_idx = buf.find(":", start_idx + 1);
+	return buf.substr(start_idx + 1, end_idx - start_idx - 1);
 }
 
 string Request::find_accept(string buf){
@@ -53,7 +53,7 @@ string Request::find_accept(string buf){
 		return "";
 	int start_idx = buf.find(" ", pre_idx);
 	int end_idx = buf.find("\n", start_idx + 1);
-	return buf.substr(start_idx + 1, end_idx - start_idx);
+	return buf.substr(start_idx + 1, end_idx - start_idx - 1);
 }
 
 string Request::find_accept_encoding(string buf){
@@ -62,7 +62,7 @@ string Request::find_accept_encoding(string buf){
 		return "";
 	int start_idx = buf.find(" ", pre_idx);
 	int end_idx = buf.find("\n", start_idx + 1);
-	return buf.substr(start_idx + 1, end_idx - start_idx);
+	return buf.substr(start_idx + 1, end_idx - start_idx - 1);
 }
 
 string Request::get_request_type(){
