@@ -203,8 +203,8 @@ int main(int argc, char *argv[])
 
 			string file_string = "";
 			string status_code = "";
-			string homepath = getenv("HOME");
-			string filepath = homepath + "/" + request->get_filename();
+			//string homepath = getenv("HOME");
+			string filepath = request->get_filename();
 			ifstream req_file(filepath.c_str());
 
 			// change status_code to 400 for bad request
