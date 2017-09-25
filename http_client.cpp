@@ -15,8 +15,6 @@
 
 #include <arpa/inet.h>
 
-#define PORT "3490" // the port client will be connecting to 
-
 #define MAXDATASIZE 100 // max number of bytes we can get at once 
 using namespace std;
 
@@ -30,7 +28,7 @@ void *get_in_addr(struct sockaddr *sa)
 	return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-string parse_args(char * argv[]){
+string parse_args(char * argv[], string * port_ptr){
 	string port = "80";
 	int colon_pos = 0, slash_pos = 0, hostname_end = 0;;
 	string filename = "", hostname = "";
@@ -68,6 +66,7 @@ string parse_args(char * argv[]){
 	output.append("Accept-Encoding: ide\r\n");
 	output.append("Host: " + hostname + ":" + port + "\r\n");
 	
+	*port_ptr = port;
 	return output;
 }
 
@@ -78,18 +77,20 @@ int main(int argc, char *argv[])
 	struct addrinfo hints, *servinfo, *p;
 	int rv;
 	char s[INET6_ADDRSTRLEN];
+	string * port;
 
 	if (argc != 2) {
 	    fprintf(stderr, "usage: client hostname[:port]/path/to/file\n");
 	    exit(1);
 	}
-	string header = parse_args(argv);
+	string header = parse_args(argv, port);
 	cout << "header:\n" << header << endl;
+	cout << "port: " << *port << endl;
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 
-	if ((rv = getaddrinfo(argv[1], PORT, &hints, &servinfo)) != 0) {
+	if ((rv = getaddrinfo(argv[1], (*port).c_str(), &hints, &servinfo)) != 0) {
 		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
 		return 1;
 	}
