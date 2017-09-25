@@ -75,7 +75,7 @@ string encode_response(string status_code, Request * request, string file_string
 	else if (status_code == "404"){
 		status_msg = "Not Found";
 	}
-	else{
+	else {
 		status_msg = "Bad Request";
 	}
 	
