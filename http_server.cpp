@@ -75,20 +75,30 @@ string encode_response(string status_code, Request * request, string file_string
 	else if (status_code == "404"){
 		status_msg = "Not Found";
 	}
+	else{
+		status_msg = "Bad Request";
+	}
 	
   
 	string date = "Date: " + get_date();
-	string file_type = get_file_type(request->get_filename());
 
-	// form header
-	response.append(request->get_http_protocol()+" "+status_code+" "+status_msg+"\r\n");
-	response.append(date + "\r\n");
-	response.append("Content-Length: " + to_string(file_string.size()) + "\r\n");
-	response.append("Content-Type: text/html\r\n\r\n");
+	if (status_code == "404" || status_code == "400"){
+		response.append(request->get_http_protocol()+" "+status_code+" "+status_msg+"\r\n");
+		response.append(date + "\r\n");
+		response.append("Content-Length: 0\r\n");
+		response.append("Content-Type: text/html\r\n\r\n");
+	}
+	else {
+		string file_type = get_file_type(request->get_filename());
+		// form header
+		response.append(request->get_http_protocol()+" "+status_code+" "+status_msg+"\r\n");
+		response.append(date + "\r\n");
+		response.append("Content-Length: " + to_string(file_string.size()) + "\r\n");
+		response.append("Content-Type: text/html\r\n\r\n");
 
-	// form document
-	response.append(file_string);
-
+		// form document
+		response.append(file_string);
+	}
 	return response;
 }
 
@@ -203,17 +213,19 @@ int main(int argc, char *argv[])
 
 			string file_string = "";
 			string status_code = "";
-			//string homepath = getenv("HOME");
 			string filepath = request->get_filename();
 			ifstream req_file(filepath.c_str());
 
 			// change status_code to 400 for bad request
 			// check request->filename, host, etc.
 
-			if (!req_file){
+			if (request->get_request_type() == "-1"){
+				status_code = "400";
+			}
+			else if (!req_file){
 				status_code = "404";
 			}
-			else{
+			else {
 				stringstream file_stream;
 				file_stream << req_file.rdbuf();
 				file_string = file_stream.str();
@@ -221,11 +233,9 @@ int main(int argc, char *argv[])
 			}
 			
 			string response = encode_response(status_code, request, file_string);
-			//cout << "RESPONSE: \n" << response << endl;
 			
 
 			// send file + error code + other info back to client
-
 			if (send(new_fd, (const void *)response.c_str(), response.size(), 0) == -1){
 				perror("send");
 			}

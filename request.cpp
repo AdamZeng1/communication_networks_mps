@@ -6,6 +6,9 @@ using namespace std;
 
 Request::Request(string buf){
 	this->request_type = find_request_type(buf);
+	if (this->request_type != "GET" || this->request_type != "POST"){
+		this->request_type = "-1";
+	}
 	this->filename = find_filename(buf);
 	this->http_protocol = find_http_protocol(buf);
 	this->user_agent = find_user_agent(buf);
