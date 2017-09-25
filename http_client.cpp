@@ -132,8 +132,9 @@ int main(int argc, char *argv[])
 
 	freeaddrinfo(servinfo); // all done with this structure
 	
-	if (send(sockfd, request.c_str(), request.length(), 0) == request.length()){
+	if (send(sockfd, request.c_str(), request.length(), 0) != request.length()){
 		cout << "client: send error" << endl;
+		return -1;
 	}
 
 	string response = "";
@@ -143,6 +144,7 @@ int main(int argc, char *argv[])
 		else
 			break;
 	}
+	cout << "response:\n" << response << endl;
 	close(sockfd);
 	int first_space, second_space;
 	string response_num = "";
