@@ -9,6 +9,9 @@ Request::Request(string buf){
 	this->filename = find_filename(buf);
 	this->http_protocol = find_http_protocol(buf);
 	this->user_agent = find_user_agent(buf);
+	this->host = find_host(buf);
+	this->accept = find_accept(buf);
+	this->accept_encoding = find_accept_encoding(buf);
 }
 
 string Request::find_request_type(string buf){
@@ -22,14 +25,43 @@ string Request::find_filename(string buf){
 }
 
 string Request::find_http_protocol(string buf){
-	new_line_1_idx = buf.find("\n");
+	int new_line_1_idx = buf.find("\n");
 	return buf.substr(second_space_idx+1, new_line_1_idx - second_space_idx);
 }
 
 string Request::find_user_agent(string buf){
-	int pre_idx = new_line_1_idx + 1;
-	int start_idx = buf.find(" ", pre_idx+1);
-	int end_idx = buf.find("\n", start_idx+1);
+	int pre_idx = buf.find("User-Agent: ");
+	if (pre_idx == -1)
+		return "";
+	int start_idx = buf.find(" ", pre_idx);
+	int end_idx = buf.find("\n", start_idx + 1);
+	return buf.substr(start_idx + 1, end_idx - start_idx);
+}
+
+string Request::find_host(string buf){
+	int pre_idx = buf.find("Host: ");
+	if (pre_idx == -1)
+		return "";
+	int start_idx = buf.find(" ", pre_idx);
+	int end_idx = buf.find("\n", start_idx + 1);
+	return buf.substr(start_idx + 1, end_idx - start_idx);
+}
+
+string Request::find_accept(string buf){
+	int pre_idx = buf.find("Accept: ");
+	if (pre_idx == -1)
+		return "";
+	int start_idx = buf.find(" ", pre_idx);
+	int end_idx = buf.find("\n", start_idx + 1);
+	return buf.substr(start_idx + 1, end_idx - start_idx);
+}
+
+string Request::find_accept_encoding(string buf){
+	int pre_idx = buf.find("Accept-Encoding: ");
+	if (pre_idx == -1)
+		return "";
+	int start_idx = buf.find(" ", pre_idx);
+	int end_idx = buf.find("\n", start_idx + 1);
 	return buf.substr(start_idx + 1, end_idx - start_idx);
 }
 
@@ -48,3 +80,17 @@ string Request::get_http_protocol(){
 string Request::get_user_agent(){
 	return this->user_agent;
 }
+
+string Request::get_host(){
+	return this->host;
+}
+
+string Request::get_accept(){
+	return this->accept;
+}
+
+string Request::get_accept_encoding(){
+	return this->accept_encoding;
+}
+
+

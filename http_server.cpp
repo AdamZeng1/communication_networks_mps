@@ -18,7 +18,10 @@
 #include "http_server.h"
 #include "request.h"
 #include <iostream>
-#include <string> 
+#include <string>
+#include <sstream> 
+#include <fstream>
+#include <streambuf>
 
 
 #define BACKLOG 10	 // how many pending connections queue will hold
@@ -141,10 +144,22 @@ int main(int argc, char *argv[])
 			}
 			buf[numbytes] = '\0';
 			Request * request = new Request(string(buf));
+			/*
+			// prints request class attributes
 			cout << "request type: " << request->get_request_type() << endl;
 			cout << "filename: " << request->get_filename() << endl;
 			cout << "http protocol: " << request->get_http_protocol() << endl;
 			cout << "user agent: " << request->get_user_agent() << endl;
+			*/
+			cout << "host: " << request->get_host() << endl;
+
+			ifstream req_file((request->get_filename()).c_str());
+			stringstream file_stream;
+			file_stream << req_file.rdbuf();
+			string file_string = file_stream.str();
+
+			cout << file_string << endl;
+		
 			close(new_fd);
 			exit(0);
 		}
