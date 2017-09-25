@@ -154,15 +154,18 @@ int main(int argc, char *argv[])
 
 			ifstream req_file((request->get_filename()).c_str());
 			if (req_file.in == 0){
-				cout << "404" << endl;
-				exit(0);
+				error_code = "404";
 			}
-			stringstream file_stream;
-			file_stream << req_file.rdbuf();
-			string file_string = file_stream.str();
+			else{
+				stringstream file_stream;
+				file_stream << req_file.rdbuf();
+				string file_string = file_stream.str();
+				cout << file_string << endl;
+				error_code = "200";
+			}
 
-			cout << file_string << endl;
-		
+			// send file + error code + other info back to client
+	
 			close(new_fd);
 			exit(0);
 		}
