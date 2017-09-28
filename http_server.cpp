@@ -208,8 +208,8 @@ int main(int argc, char *argv[])
 			cout << "request type: " << request->get_request_type() << endl;
 			cout << "filename: " << request->get_filename() << endl;
 			cout << "http protocol: " << request->get_http_protocol() << endl;
-			cout << "user agent: " << request->get_user_agent() << endl;
-			cout << "host: " << request->get_host() << endl;
+			//cout << "user agent: " << request->get_user_agent() << endl;
+			//cout << "host: " << request->get_host() << endl;
 
 			string file_string = "";
 			string status_code = "";

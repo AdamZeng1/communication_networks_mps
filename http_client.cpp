@@ -68,8 +68,7 @@ http_info_t parse_args(char * argv[]){
 	output.filename = filename;
 	cout << "hostname: " << hostname << endl;
 	cout << "port: " << port << endl;
-	cout << "filename: " << filename << endl;
-	
+	cout << "filename: " << filename << endl;	
 	return output;
 }
 
@@ -88,12 +87,13 @@ int main(int argc, char *argv[])
 	}
 	http_info_t header = parse_args(argv);
 	string request = "";
-        request.append("GET " + header.filename + " HTTP/1.1");
+        request.append("GET " + header.filename + " HTTP/1.1\r\n");
         //request.append("User-Agent: MP1/1\r\n");
         //request.append("Accept: /\r\n");
         //request.append("Accept-Encoding: ide\r\n");
-        //request.append("Host: " + header.hostname + ":" + header.port);
-	request.append("\r\n\r\n");
+        request.append("Host: " + header.hostname + ":" + header.port+"\r\n");
+	    request.append("\r\n");
+        cout << request << endl;
 	
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family = AF_UNSPEC;
