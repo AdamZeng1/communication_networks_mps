@@ -16,7 +16,7 @@
 
 #include <arpa/inet.h>
 
-#define MAXDATASIZE 100 // max number of bytes we can get at once 
+#define MAXDATASIZE 10000 // max number of bytes we can get at once 
 using namespace std;
 
 struct http_info_t {
@@ -81,19 +81,20 @@ int main(int argc, char *argv[])
 	char s[INET6_ADDRSTRLEN];
 	string port = "80";
 
+
 	if (argc != 2) {
 	    fprintf(stderr, "usage: client hostname[:port]/path/to/file\n");
 	    exit(1);
 	}
 	http_info_t header = parse_args(argv);
 	string request = "";
-        request.append("GET " + header.filename + " HTTP/1.1\r\n");
-        //request.append("User-Agent: MP1/1\r\n");
-        //request.append("Accept: /\r\n");
-        //request.append("Accept-Encoding: ide\r\n");
-        request.append("Host: " + header.hostname + ":" + header.port+"\r\n");
-	    request.append("\r\n");
-        cout << request << endl;
+    request.append("GET " + header.filename + " HTTP/1.1\r\n");
+    //request.append("User-Agent: MP1/1\r\n");
+    //request.append("Accept: /\r\n");
+    //request.append("Accept-Encoding: ide\r\n");
+    request.append("Host: " + header.hostname + ":" + header.port+"\r\n");
+    request.append("\r\n");
+    cout << request << endl;
 	
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family = AF_UNSPEC;
@@ -139,13 +140,14 @@ int main(int argc, char *argv[])
 
 	string response = "";
 	while(1) {
-		if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) > 0)
+		if ((numbytes = recv(sockfd, buf, MAXDATASIZE-1, 0)) > 0) {
 	    		response.append(buf, numbytes);
+        }
 		else{
 			break;
 		}
 	}
-	//cout << "response:\n" << response << endl;
+
 	close(sockfd);
 	int first_space, second_space;
 	string response_num = "";
