@@ -16,7 +16,8 @@
 
 #include <arpa/inet.h>
 
-#define MAXDATASIZE 10000 // max number of bytes we can get at once 
+//#define MAXDATASIZE 10000 // max number of bytes we can get at once 
+#define MAXDATASIZE 1048576
 using namespace std;
 
 struct http_info_t {
@@ -172,8 +173,11 @@ int main(int argc, char *argv[])
 
 
 	int file_index;
-	if ((file_index = response.find("\r\n\r\n")) > 0)
+	if ((file_index = response.find("\r\n\r\n")) > 0){
 		file_index += 4;
+        if ( (response[file_index] == '3') && (response[file_index+1]=='e') && (response[file_index+2]=='8')&&(response[file_index+3]=='0')){
+            file_index += 6;
+        }}
 	else {
 		cout << "client: File returned is invalid" << endl;
 		return -1;
