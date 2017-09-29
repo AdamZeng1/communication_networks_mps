@@ -117,6 +117,7 @@ int main(int argc, char *argv[])
 	char buf[MAXDATASIZE];
 
 	if(argc != 2){
+		cout << "please provide a port number" << endl;
 		exit(1);
 	}
 	
@@ -236,8 +237,22 @@ int main(int argc, char *argv[])
 			
 
 			// send file + error code + other info back to client
-			if (send(new_fd, (const void *)response.c_str(), response.size(), 0) == -1){
-				perror("send");
+			int length = response.size();
+			int idx = 0;
+
+
+			while (length > 0) {
+        		int send_res = send(new_fd, (const void *)response.substr(idx, response.size()).c_str(), response.size() - length, 0);
+				if (send_res == 0){
+					continue;
+				}
+				else if (send_res == -1){
+					perror("send error");
+				}
+				else {
+					idx += send_res;
+					length -= send_res;
+				}
 			}
 			close(new_fd);
 			exit(0);
