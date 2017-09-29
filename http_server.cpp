@@ -239,10 +239,13 @@ int main(int argc, char *argv[])
 			// send file + error code + other info back to client
 			int length = response.size();
 			int idx = 0;
-
+			int send_size = 1024;
 
 			while (length > 0) {
-        		int send_res = send(new_fd, (const void *)response.substr(idx, response.size()).c_str(), response.size() - length, 0);
+				if (send_size > length){
+					send_size = length;
+				}
+        		int send_res = send(new_fd, (const void *)response.substr(idx, send_size).c_str(), send_size, 0);
 				if (send_res == 0){
 					continue;
 				}
