@@ -23,6 +23,9 @@
 #include <fstream>
 #include <streambuf>
 
+#include <sys/time.h>
+#include <unistd.h>
+
 
 #define BACKLOG 10	 // how many pending connections queue will hold
 #define MAXDATASIZE 100
@@ -100,6 +103,32 @@ string encode_response(string status_code, Request * request, string file_string
 		response.append(file_string);
 	}
 	return response;
+}
+
+int sendall(int s, const char * buf, int * length){
+	int total = 0;
+	int bytesleft = *length;
+	int n;
+
+	struct timeval tv;
+	tv.tv_sec = 3;
+	tv.tv_usec = 500000;
+
+	fd_set write_fds;
+	FD_SET(s, &write_fds);
+
+
+	while(total < *length){
+		select(s + 1, NULL, &write_fds, NULL, &tv);
+		n = send(s, buf+total, bytesleft, 0);
+		if (n==-1){
+			break;
+		}
+		total += n;
+		bytesleft -= n;
+	}
+	*length = total;
+	return n==-1?-1:0;
 }
 
 int main(int argc, char *argv[])
@@ -237,16 +266,32 @@ int main(int argc, char *argv[])
 			
 
 			// send file + error code + other info back to client
-			int length = response.size();
+			/*int length = response.size();
 			int idx = 0;
 			int send_size = 1024;
 
-			while (length > 0) {
+			struct timeval tv;
+			tv.tv_sec = 3;
+			tv.tv_usec = 500000;
+
+			fd_set write_fds;
+			FD_SET(new_fd, &write_fds);
+
+			select(new_fd + 1, NULL, &write_fds, NULL, &tv);*/
+
+
+			int length = response.size();
+
+			if (sendall(new_fd, response.c_str(), &length) == -1){
+				perror("sendall error");
+				cout << "only sent " << length << " bytes :(" << endl;
+			}
+			/*while (length > 0) {
 				if (send_size > length){
 					send_size = length;
 				}
-        		int send_res = send(new_fd, (const void *)response.substr(idx, send_size).c_str(), send_size, 0);
-				if (send_res == 0){
+				int send_res = send(new_fd, (const void *)response.substr(idx, send_size).c_str(), send_size, 0);
+				if (send_res == 0){	
 					continue;
 				}
 				else if (send_res == -1){
@@ -256,7 +301,7 @@ int main(int argc, char *argv[])
 					idx += send_res;
 					length -= send_res;
 				}
-			}
+			}*/
 			close(new_fd);
 			exit(0);
 		}
@@ -266,4 +311,6 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
+
+
 
