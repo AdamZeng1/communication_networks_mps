@@ -87,17 +87,19 @@ string encode_response(string status_code, Request * request, string file_string
 
 	if (status_code == "404" || status_code == "400"){
 		response.append(request->get_http_protocol()+" "+status_code+" "+status_msg+"\r\n");
-		response.append(date + "\r\n");
+		//response.append(date + "\r\n");
 		response.append("Content-Length: 0\r\n");
-		response.append("Content-Type: text/html\r\n\r\n");
+		response.append("Content-Type: text/plain\r\n\r\n");
+        //response.append("\r\n");
 	}
 	else {
 		string file_type = get_file_type(request->get_filename());
 		// form header
 		response.append(request->get_http_protocol()+" "+status_code+" "+status_msg+"\r\n");
 		response.append(date + "\r\n");
-		response.append("Content-Length: " + to_string(file_string.size()) + "\r\n");
-		response.append("Content-Type: text/html\r\n\r\n");
+		//response.append("Content-Length: " + to_string(file_string.size()) + "\r\n");
+		response.append("Content-Type: text/plain\r\n\r\n");
+        //response.append("\r\n");
 
 		// form document
 		response.append(file_string);
