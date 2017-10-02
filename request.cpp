@@ -19,6 +19,9 @@ Request::Request(string buf){
 
 string Request::find_request_type(string buf){
 	first_space_idx = buf.find(" ");
+    if (first_space_idx == -1){
+        return "-1";
+    }
 	return buf.substr(0, first_space_idx);
 }
 

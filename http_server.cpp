@@ -27,7 +27,7 @@
 #include <unistd.h>
 
 
-#define BACKLOG 10	 // how many pending connections queue will hold
+#define BACKLOG 20	 // how many pending connections queue will hold
 #define MAXDATASIZE 100
 
 using namespace std;
