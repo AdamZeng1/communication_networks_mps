@@ -28,7 +28,7 @@
 
 
 #define BACKLOG 20	 // how many pending connections queue will hold
-#define MAXDATASIZE 100
+#define MAXDATASIZE 1000
 
 using namespace std;
 
