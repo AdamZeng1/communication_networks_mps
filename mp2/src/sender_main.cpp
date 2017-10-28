@@ -57,22 +57,22 @@ string pack_int_to_byte(int x) {
 void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* filename, unsigned long long int bytesToTransfer) {
     //Open the file
     char buf[MTU];
-   	ifstream inFile;
-   	inFile.open(filename);
+    ifstream inFile;
+    inFile.open(filename);
 
-   	if(!inFile){
-   		diep( (char *) "file");
-   		exit(1);
-   	}
+    if(!inFile){
+        diep( (char *) "file");
+        exit(1);
+    }
 
-   	stringstream file_stream;
+    stringstream file_stream;
     file_stream << inFile.rdbuf();
     string file_string = file_stream.str();
 
     if (bytesToTransfer > file_string.size())
         bytesToTransfer = file_string.size();
 
-	/* Determine how many bytes to transfer */
+    /* Determine how many bytes to transfer */
 
     slen = sizeof (si_other);
 
@@ -93,7 +93,7 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 
     while (transferred_bytes < bytesToTransfer) {
         int packets_in_window = 0;
-	    packet = file_string.substr(transferred_bytes, MTU);
+        packet = file_string.substr(transferred_bytes, MTU);
         if (packet.length() == 0)
             break;
 
@@ -104,17 +104,17 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 
         packet = sequence_message + packet;
         cout << packet << endl;
-	    while (packets_in_window != cwnd) {
-		    if ((sentBytes = sendto(s, packet.data(), packet.length(), 0, (struct sockaddr *) &si_other, slen)) == -1) {
-				diep( (char *) "send");
-				exit(1);
-			}
+        while (packets_in_window != cwnd) {
+            if ((sentBytes = sendto(s, packet.data(), packet.length(), 0, (struct sockaddr *) &si_other, slen)) == -1) {
+                diep( (char *) "send");
+                exit(1);
+            }
             printf("%d", sentBytes);
-			transferred_bytes += sentBytes;
-			packets_in_window++;
-		}
-	}
-	/* Send data and receive acknowledgements on s*/
+            transferred_bytes += sentBytes;
+            packets_in_window++;
+        }
+    }
+    /* Send data and receive acknowledgements on s*/
 
     printf("Closing the socket\n");
     close(s);
