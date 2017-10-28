@@ -37,6 +37,7 @@ struct sockaddr_in si_other;
 int s, slen;
 
 int send_base = 0;
+int last_ack = 0;
 int cwnd = 1;
 
 
@@ -45,10 +46,17 @@ void diep(char *s) {
     exit(1);
 }
 
+string pack_int_to_byte(int x) {
+    string out;
+    for (int shift = 24; shift >= 0; shift = shift - 8){
+        out.push_back(((char) (x >> shift) & 0xFF));
+    }
+    return out;
+}
 
 void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* filename, unsigned long long int bytesToTransfer) {
     //Open the file
-    char buf[1500];
+    char buf[MTU];
    	ifstream inFile;
    	inFile.open(filename);
 
@@ -60,6 +68,9 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
    	stringstream file_stream;
     file_stream << inFile.rdbuf();
     string file_string = file_stream.str();
+
+    if (bytesToTransfer > file_string.size())
+        bytesToTransfer = file_string.size();
 
 	/* Determine how many bytes to transfer */
 
@@ -75,17 +86,30 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
         fprintf(stderr, "inet_aton() failed\n");
         exit(1);
     }
+
+
     string packet;
     int transferred_bytes = 0, sentBytes = 0;
-    while (transferred_bytes != bytesToTransfer) {
-	    int packets_in_window = 0;
+
+    while (transferred_bytes < bytesToTransfer) {
+        int packets_in_window = 0;
 	    packet = file_string.substr(transferred_bytes, MTU);
-	    while (packet.length() && packets_in_window != cwnd) {
-		    
-		    if ((sentBytes = sendto(s, packet.c_str(), packet.length(), 0, (struct sockaddr *) &si_other, slen) == -1)) {
+        if (packet.length() == 0)
+            break;
+
+        int seq_number = transferred_bytes;
+        string sequence_message = pack_int_to_byte(seq_number);
+        if (seq_number == 0)
+            sequence_message += pack_int_to_byte(file_string.length());
+
+        packet = sequence_message + packet;
+        cout << packet << endl;
+	    while (packets_in_window != cwnd) {
+		    if ((sentBytes = sendto(s, packet.data(), packet.length(), 0, (struct sockaddr *) &si_other, slen)) == -1) {
 				diep( (char *) "send");
 				exit(1);
 			}
+            printf("%d", sentBytes);
 			transferred_bytes += sentBytes;
 			packets_in_window++;
 		}
@@ -117,7 +141,6 @@ int main(int argc, char** argv) {
 
 
     reliablyTransfer(argv[1], udpPort, argv[3], numBytes);
-
 
     return (EXIT_SUCCESS);
 }
