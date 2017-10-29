@@ -17,7 +17,7 @@
 #include <pthread.h>
 #include <fstream>
 #include <iostream>
-#define MTU 1500
+#define MTU 10
 #define MYPORT "4950"
 using namespace std;
 
@@ -29,16 +29,14 @@ void diep(char *s) {
 	perror(s);
 	exit(1);
 }
-/*
-int sendACK(int seq_num){
-	string packet;
-	packet = to_string(seq_num);
-	if ((int sentBytes = sendto(s, packet.data, packet.length(), 0, (struct sockaddr *) &si_other, slen) == -1)) {
-		diep( (char *) "send");
-		return -1;
+
+string pack_int_to_bytes(int num) {
+	string out;
+	for (int shift = 24; shift >= 0; shift = shift - 8){
+		out.push_back(((char) (num >> shift) & 0xFF));
 	}
-	return 1;
-}*/
+	return out;
+}
 
 int pack_bytes_to_int(string bytes){
 	int num = 0;
@@ -47,10 +45,39 @@ int pack_bytes_to_int(string bytes){
 	}
 	return num;
 }
+
 void bytes_to_string(string * recv_pkt, char * buf, int idx, int num_bytes){
 	for (int i = idx; i < num_bytes; i++){
 		recv_pkt->push_back(buf[i]);
 	}
+	return;
+}
+
+int sendACK(int ack_num){
+	int sentBytes = 0;
+	cout << "sending ACK: " << ack_num << endl;
+	string packet = pack_int_to_bytes(ack_num);
+	if ((sentBytes = sendto(s, packet.data(), packet.length(), 0, (struct sockaddr *) &si_other, slen)) == -1) {
+		diep( (char *) "send");
+		return -1;
+	}
+	return 1;
+}
+
+void add_to_file(char* destinationFile, string msg){
+	cout << "appending to file: " << msg << endl;
+	ofstream file;
+	file.open(destinationFile, ofstream::out | ofstream::app);
+	file << msg;
+	file.close();
+	return;
+}
+
+void init_file(char * destinationFile){
+	ofstream file;
+	file.open(destinationFile);
+	file << "";
+	file.close();
 }
 
 void reliablyReceive(unsigned short int myUDPport, char* destinationFile) {
@@ -58,16 +85,13 @@ void reliablyReceive(unsigned short int myUDPport, char* destinationFile) {
 	char buf[MTU+4];
 	char recv_buf[MTU+4];
 	string recv_pkt;
+	string msg;
 
 	int recvBytes = 0;
-
-	int rwnd = 1500;
-	int rcvbase = 0;
-	int seq_num = 6969;
+	int seq_num = -1;
 
 	int expected_seq_num = 0;
 	int expected_file_size = 0;
-
 
 	if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
 		diep((char *)"socket");
@@ -80,54 +104,51 @@ void reliablyReceive(unsigned short int myUDPport, char* destinationFile) {
 	if (bind(s, (struct sockaddr*) &si_me, sizeof (si_me)) == -1)
 		diep((char *)"bind");
 
+	init_file(destinationFile);
 
 	/* Now receive data and send acknowledgements */ 
-
 	while(1){
 		if ((recvBytes = recvfrom(s, recv_buf, MTU+4 , 0, (struct sockaddr *) &si_other, &slen)) == -1) {
 			perror("recvfrom");
 			exit(1);
 		}
+		recv_pkt = "";
 		bytes_to_string(&recv_pkt, recv_buf, 0, recvBytes);
 		cout << recv_pkt << endl;
 		cout << "bytes received: " << recvBytes << endl;
-		
 		seq_num = pack_bytes_to_int(recv_pkt.substr(0, 4));
 		cout << "sequence number: " << seq_num << endl;
 
-		if (seq_num == 0){
+		msg = recv_pkt.substr(4,recvBytes-4);
+
+		if (seq_num == 6969){
 			expected_file_size = pack_bytes_to_int(recv_pkt.substr(4, 4));
 			cout << "exepcted file size: " << expected_file_size << endl;
+			sendACK(6969);
+			if (expected_file_size == 0){
+				break;
+			}
+			continue;
 		}
 
-		/*else if (rcvbase == expected_file_size){
-			// send ack for packet
-			if (sendACK(expected_seq_num)){
+		if (seq_num == expected_seq_num){
+			// deliver data: to file
+			cout << "msg size: " << msg.length() << endl;
+			add_to_file(destinationFile, msg);
+			expected_seq_num += recvBytes - 4; // don't count seq_num in recvBytes
+			sendACK(expected_seq_num);
+			cout << "expected seq num: " << expected_seq_num << endl;
+			if (expected_seq_num == expected_file_size)
 				break;
-			}
-		}
-		else if (seq_num == expected_seq_num){
-			// deliver data: to file? to temporary data structure? 
-			// sndpkt = make_pkt(expectedseqnum,ACK,chksum)
-			// udt_send(sndpkt)
-			expected_seq_num += 1;
 		}
 		else {
-				// no receiver buffering, discard packet
-				// re-ack pkt w/ highest in-order seq # 
-				if (sendACK(expected_seq_num)){
-				break;
-			}
-		}*/
-		break;
+			// discard packet, no buffering
+			sendACK(expected_seq_num);
+		}
 	}
 
 	close(s);
-	ofstream file;
-	file.open(destinationFile);
-	file << buf;
-	file.close();
-	printf("%s received.\n", destinationFile);
+	cout << destinationFile << " received!" << endl;;
 	return;
 }
 
