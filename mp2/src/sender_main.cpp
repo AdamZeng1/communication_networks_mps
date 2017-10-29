@@ -11,7 +11,7 @@
 #include <sstream> 
 #include <fstream>
 #include <streambuf>
-
+#include <time.h>
 
 
 #include <stdio.h>
@@ -29,24 +29,25 @@
 #include <string.h>
 #include <sys/time.h>
 
-#define MTU 1500 
-
+#define MTU 10 
+#define TIME_OUT .1
 using namespace std;
 
 struct sockaddr_in si_other;
-int s, slen;
+int s;
+socklen_t slen;
 
 int send_base = 0;
 int last_ack = 0;
 int cwnd = 1;
-
+clock_t send_time;
 
 void diep(char *s) {
     perror(s);
     exit(1);
 }
 
-string pack_int_to_byte(int x) {
+string pack_int_to_bytes(int x) {
     string out;
     for (int shift = 24; shift >= 0; shift = shift - 8){
         out.push_back(((char) (x >> shift) & 0xFF));
@@ -54,9 +55,33 @@ string pack_int_to_byte(int x) {
     return out;
 }
 
+void bytes_to_string(string * recv_pkt, char * buf, int idx, int num_bytes){
+    for (int i = idx; i < num_bytes; i++){
+        recv_pkt->push_back(buf[i]);
+    }
+}
+
+int bytes_to_int(string bytes){
+    int num = 0;
+    for (int i = 0; i != 4; i++) {
+        num += int(bytes[i] << (24 - i * 8));
+    }
+    return num;
+}
+void set_timeout(){
+    send_time = clock();
+}
+
+bool check_timeout(){
+    clock_t cur_time = clock() - send_time;
+    if ((float)cur_time/CLOCKS_PER_SEC > TIME_OUT)
+        return true;
+    else
+        return false;
+}
+
 void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* filename, unsigned long long int bytesToTransfer) {
     //Open the file
-    char buf[MTU];
     ifstream inFile;
     inFile.open(filename);
 
@@ -68,6 +93,7 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
     stringstream file_stream;
     file_stream << inFile.rdbuf();
     string file_string = file_stream.str();
+    inFile.close();
 
     if (bytesToTransfer > file_string.size())
         bytesToTransfer = file_string.size();
@@ -89,36 +115,87 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 
 
     string packet;
-    int transferred_bytes = 0, sentBytes = 0;
+    int sentBytes = 0, recvBytes = 0;
+    char ack_buf[4];
+    int cur_ack = -1;
+    string ack_pkt;
+    while(true){
+    	string sequence_message = pack_int_to_bytes(6969);
+    	packet = sequence_message + pack_int_to_bytes(bytesToTransfer);
+    	if ((sentBytes = sendto(s, packet.data(), packet.length(), 0, (struct sockaddr *) &si_other, slen)) == -1) {
+                diep( (char *) "send");
+                exit(1);
+        }//send file size
+        if ((recvBytes = recvfrom(s, ack_buf, 4 , 0, (struct sockaddr *) &si_other, &slen)) == -1) {
+                perror("recvfrom");
+                exit(1);
+        }
+        bytes_to_string(&ack_pkt, ack_buf, 0, recvBytes);
+        cur_ack = bytes_to_int(ack_pkt); 
+        if (cur_ack == 6969)
+        	break;
+    }
 
-    while (transferred_bytes < bytesToTransfer) {
-        int packets_in_window = 0;
-        packet = file_string.substr(transferred_bytes, MTU);
-        if (packet.length() == 0)
-            break;
-
-        int seq_number = transferred_bytes;
-        string sequence_message = pack_int_to_byte(seq_number);
-        if (seq_number == 0)
-            sequence_message += pack_int_to_byte(file_string.length());
-
-        packet = sequence_message + packet;
-        cout << packet << endl;
+    cur_ack = -1;
+    while (send_base < bytesToTransfer) {
+        int packets_in_window = 0, transferred_bytes = 0;
+        set_timeout();
         while (packets_in_window != cwnd) {
+            int seq_number = send_base + transferred_bytes;
+            cout << "seq " << seq_number << endl;
+            if (seq_number > bytesToTransfer){
+            	cout << "here";
+                break;
+            }
+
+            string sequence_message = pack_int_to_bytes(seq_number);
+            if (bytesToTransfer < seq_number + MTU){
+            	packet = sequence_message + file_string.substr(seq_number, bytesToTransfer - seq_number);
+            }
+           	else{
+           		cout << "this happens " << endl;
+            	packet = sequence_message + file_string.substr(seq_number, MTU);
+           	}
+            
+            cout << packet << endl;
+            //cout << packet.length();
             if ((sentBytes = sendto(s, packet.data(), packet.length(), 0, (struct sockaddr *) &si_other, slen)) == -1) {
                 diep( (char *) "send");
                 exit(1);
             }
-            printf("%d", sentBytes);
-            transferred_bytes += sentBytes;
+
+            transferred_bytes += sentBytes - 4;
+            cout << "t bytes: " << transferred_bytes << endl;
             packets_in_window++;
         }
+
+        int loop_end = transferred_bytes + send_base;
+
+        while(cur_ack < loop_end) {
+            if ((recvBytes = recvfrom(s, ack_buf, 4 , 0, (struct sockaddr *) &si_other, &slen)) == -1) {
+                perror("recvfrom");
+                exit(1);
+            }
+
+            ack_pkt = "";
+            bytes_to_string(&ack_pkt, ack_buf, 0, recvBytes);
+            cur_ack = bytes_to_int(ack_pkt); 
+            cout << "ack received: "<< cur_ack << " send base: " << send_base << " cwnd: " << cwnd << " loop_end " << loop_end << endl;
+            if (cur_ack > send_base){
+                cwnd++;
+                send_base = cur_ack;
+            }
+            if(check_timeout()){
+                cwnd = 1;
+                break;
+            }
+        }
+        //cout << "here" << endl;
     }
     /* Send data and receive acknowledgements on s*/
 
-    printf("Closing the socket\n");
+    //printf("Closing the socket\n");
     close(s);
-    inFile.close();
     return;
 
 }
@@ -144,5 +221,3 @@ int main(int argc, char** argv) {
 
     return (EXIT_SUCCESS);
 }
-
-
