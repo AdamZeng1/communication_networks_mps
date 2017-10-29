@@ -17,7 +17,7 @@
 #include <pthread.h>
 #include <fstream>
 #include <iostream>
-#define MTU 10
+#define MTU 1400
 #define MYPORT "4950"
 using namespace std;
 
@@ -82,7 +82,6 @@ void init_file(char * destinationFile){
 
 void reliablyReceive(unsigned short int myUDPport, char* destinationFile) {
 	slen = sizeof (si_other);
-	char buf[MTU+4];
 	char recv_buf[MTU+4];
 	string recv_pkt;
 	string msg;
