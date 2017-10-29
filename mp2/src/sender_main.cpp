@@ -119,8 +119,12 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
                 exit(1);
         }//send file size
         if ((recvBytes = recvfrom(s, ack_buf, 4 , 0, (struct sockaddr *) &si_other, &slen)) == -1) {
-                perror("recvfrom");
-                exit(1);
+        	if (EAGAIN | EWOULDBLOCK){
+        		cwnd = 1;
+        		continue;
+        	}
+            perror("recvfrom");
+            exit(1);
         }
         bytes_to_string(&ack_pkt, ack_buf, 0, recvBytes);
         cur_ack = bytes_to_int(ack_pkt); 
@@ -164,6 +168,10 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 
         while(cur_ack < loop_end) {
             if ((recvBytes = recvfrom(s, ack_buf, 4 , 0, (struct sockaddr *) &si_other, &slen)) == -1) {
+            	if (EAGAIN | EWOULDBLOCK){
+        			cwnd = 1;
+        			continue;
+        		}
                 perror("recvfrom");
                 exit(1);
             }
