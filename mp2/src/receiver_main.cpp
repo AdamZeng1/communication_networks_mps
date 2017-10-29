@@ -41,7 +41,9 @@ string pack_int_to_bytes(int num) {
 unsigned int pack_bytes_to_int(string bytes){
 	unsigned int num = 0;
 	for (int i = 0; i != 4; i++) {
-		num += int(bytes[i] << (24 - i * 8));
+		unsigned char cur = bytes[i];
+		//cout << (unsigned int) cur << endl;
+		num += (unsigned int) (cur << (24 - i * 8));
 	}
 	return num;
 }
@@ -65,7 +67,7 @@ int sendACK(int ack_num){
 }
 
 void add_to_file(char* destinationFile, string msg){
-	cout << "appending to file: " << msg << endl;
+	//cout << "appending to file: " << msg << endl;
 	ofstream file;
 	file.open(destinationFile, ofstream::out | ofstream::app);
 	file << msg;
@@ -104,6 +106,26 @@ void reliablyReceive(unsigned short int myUDPport, char* destinationFile) {
 		diep((char *)"bind");
 
 	init_file(destinationFile);
+	while (true){
+		if ((recvBytes = recvfrom(s, recv_buf, 8 , 0, (struct sockaddr *) &si_other, &slen)) == -1) {
+			perror("recvfrom");
+			exit(1);
+		}
+		recv_pkt = "";
+		bytes_to_string(&recv_pkt, recv_buf, 0, recvBytes);
+		seq_num = pack_bytes_to_int(recv_pkt.substr(0, 4));
+		cout << "sequence number: " << seq_num << endl;
+
+		if (seq_num == 6969){
+			expected_file_size = pack_bytes_to_int(recv_pkt.substr(4, 4));
+			cout << "exepcted file size: " << expected_file_size << endl;
+			sendACK(6969);
+			if (expected_file_size == 0){
+				return; 	// might need to change for empty files and want to keep receiver running
+			}
+			break;
+		}
+	}
 
 	/* Now receive data and send acknowledgements */ 
 	while(1){
@@ -113,22 +135,12 @@ void reliablyReceive(unsigned short int myUDPport, char* destinationFile) {
 		}
 		recv_pkt = "";
 		bytes_to_string(&recv_pkt, recv_buf, 0, recvBytes);
-		cout << recv_pkt << endl;
+		//cout << recv_pkt << endl;
 		cout << "bytes received: " << recvBytes << endl;
 		seq_num = pack_bytes_to_int(recv_pkt.substr(0, 4));
 		cout << "sequence number: " << seq_num << endl;
 
 		msg = recv_pkt.substr(4,recvBytes-4);
-
-		if (seq_num == 6969){
-			expected_file_size = pack_bytes_to_int(recv_pkt.substr(4, 4));
-			cout << "exepcted file size: " << expected_file_size << endl;
-			sendACK(6969);
-			if (expected_file_size == 0){
-				break;
-			}
-			continue;
-		}
 
 		if (seq_num == expected_seq_num){
 			// deliver data: to file
