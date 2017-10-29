@@ -38,8 +38,8 @@ string pack_int_to_bytes(int num) {
 	return out;
 }
 
-int pack_bytes_to_int(string bytes){
-	int num = 0;
+unsigned int pack_bytes_to_int(string bytes){
+	unsigned int num = 0;
 	for (int i = 0; i != 4; i++) {
 		num += int(bytes[i] << (24 - i * 8));
 	}
@@ -90,7 +90,7 @@ void reliablyReceive(unsigned short int myUDPport, char* destinationFile) {
 	int seq_num = -1;
 
 	int expected_seq_num = 0;
-	int expected_file_size = 0;
+	unsigned int expected_file_size = 0;
 
 	if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
 		diep((char *)"socket");
