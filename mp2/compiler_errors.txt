@@ -1,0 +1,19 @@
+compilation of version 5 failed with:
+g++    -c -o obj/sender_main.o obj/sender_main.cpp
+obj/sender_main.cpp: In function ‘void reliablyTransfer(char*, short unsigned int, char*, long long unsigned int)’:
+obj/sender_main.cpp:122:14: error: ‘EAGAIN’ was not declared in this scope
+          if (EAGAIN | EWOULDBLOCK){
+              ^
+obj/sender_main.cpp:122:23: error: ‘EWOULDBLOCK’ was not declared in this scope
+          if (EAGAIN | EWOULDBLOCK){
+                       ^
+obj/sender_main.cpp:171:18: error: ‘EAGAIN’ was not declared in this scope
+              if (EAGAIN | EWOULDBLOCK){
+                  ^
+obj/sender_main.cpp:171:27: error: ‘EWOULDBLOCK’ was not declared in this scope
+              if (EAGAIN | EWOULDBLOCK){
+                           ^
+<builtin>: recipe for target 'obj/sender_main.o' failed
+make: *** [obj/sender_main.o] Error 1
+ 
+
