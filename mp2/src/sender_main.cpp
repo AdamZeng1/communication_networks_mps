@@ -48,8 +48,10 @@ void diep(char *s) {
 
 string pack_int_to_bytes(int x) {
     string out;
+    //cout << "begin loop: " << x << endl;
     for (int shift = 24; shift >= 0; shift = shift - 8){
-        out.push_back(((char) (x >> shift) & 0xFF));
+        //cout << "file[" << shift/8 << "] = " << ((x >> shift) & 0xFF) << endl;
+	out.push_back(((char) (x >> shift) & 0xFF));
     }
     return out;
 }
@@ -60,10 +62,11 @@ void bytes_to_string(string * recv_pkt, char * buf, int idx, int num_bytes){
     }
 }
 
-int bytes_to_int(string bytes){
-    int num = 0;
+unsigned int bytes_to_int(string bytes){
+    unsigned int num = 0;
     for (int i = 0; i != 4; i++) {
-        num += int(bytes[i] << (24 - i * 8));
+	unsigned char cur = bytes[i];
+        num += (unsigned int) (cur << (24 - i * 8));
     }
     return num;
 }
@@ -109,8 +112,9 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
     string packet;
     int sentBytes = 0, recvBytes = 0;
     char ack_buf[4];
-    int cur_ack = -1;
+    unsigned int cur_ack = 0;
     string ack_pkt;
+	int dup_ack = 0;
     while(true){
     	string sequence_message = pack_int_to_bytes(6969);
     	packet = sequence_message + pack_int_to_bytes(bytesToTransfer);
@@ -132,14 +136,15 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
         	break;
     }
 
-    cur_ack = -1;
+    cur_ack = 0;
     while (send_base < bytesToTransfer) {
+	dup_ack = 0;
         int packets_in_window = 0, transferred_bytes = 0;
         while (packets_in_window != cwnd) {
             int seq_number = send_base + transferred_bytes;
             cout << "seq " << seq_number << endl;
             if (seq_number > bytesToTransfer){
-            	cout << "here";
+            	//cout << "here";
                 break;
             }
 
@@ -148,11 +153,11 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
             	packet = sequence_message + file_string.substr(seq_number, bytesToTransfer - seq_number);
             }
            	else{
-           		cout << "this happens " << endl;
-            	packet = sequence_message + file_string.substr(seq_number, MTU);
+           		//cout << "this happens " << endl;
+            		packet = sequence_message + file_string.substr(seq_number, MTU);
            	}
             
-            cout << packet << endl;
+            //cout << packet << endl;
             //cout << packet.length();
             if ((sentBytes = sendto(s, packet.data(), packet.length(), 0, (struct sockaddr *) &si_other, slen)) == -1) {
                 diep( (char *) "send");
@@ -160,7 +165,7 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
             }
 
             transferred_bytes += sentBytes - 4;
-            cout << "t bytes: " << transferred_bytes << endl;
+            //cout << "t bytes: " << transferred_bytes << endl;
             packets_in_window++;
         }
 
@@ -169,8 +174,9 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
         while(cur_ack < loop_end) {
             if ((recvBytes = recvfrom(s, ack_buf, 4 , 0, (struct sockaddr *) &si_other, &slen)) == -1) {
             	if (EAGAIN | EWOULDBLOCK){
-        			cwnd = 1;
-        			continue;
+        			cout << "timeout waiting for: " << send_base << endl;
+				cwnd = 1;
+        			break;
         		}
                 perror("recvfrom");
                 exit(1);
@@ -184,6 +190,13 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
                 cwnd++;
                 send_base = cur_ack;
             }
+	    else if (cur_ack == send_base) {
+		dup_ack++;
+		if (dup_ack == 3){
+			cwnd = 1;
+			break;
+		}
+	    }
         }
         //cout << "here" << endl;
     }
