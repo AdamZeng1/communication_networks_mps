@@ -29,8 +29,8 @@
 #include <string.h>
 #include <sys/time.h>
 
-#define MTU 10 
-#define TIME_OUT .1
+#define MTU 1400 
+
 using namespace std;
 
 struct sockaddr_in si_other;
@@ -40,7 +40,6 @@ socklen_t slen;
 int send_base = 0;
 int last_ack = 0;
 int cwnd = 1;
-clock_t send_time;
 
 void diep(char *s) {
     perror(s);
@@ -67,17 +66,6 @@ int bytes_to_int(string bytes){
         num += int(bytes[i] << (24 - i * 8));
     }
     return num;
-}
-void set_timeout(){
-    send_time = clock();
-}
-
-bool check_timeout(){
-    clock_t cur_time = clock() - send_time;
-    if ((float)cur_time/CLOCKS_PER_SEC > TIME_OUT)
-        return true;
-    else
-        return false;
 }
 
 void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* filename, unsigned long long int bytesToTransfer) {
@@ -113,6 +101,10 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
         exit(1);
     }
 
+    struct timeval tv;
+	tv.tv_sec = 0;
+	tv.tv_usec = 30000; //100ms
+	setsockopt(s,SOL_SOCKET,SO_RCVTIMEO,&tv,sizeof(struct timeval));
 
     string packet;
     int sentBytes = 0, recvBytes = 0;
@@ -139,7 +131,6 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
     cur_ack = -1;
     while (send_base < bytesToTransfer) {
         int packets_in_window = 0, transferred_bytes = 0;
-        set_timeout();
         while (packets_in_window != cwnd) {
             int seq_number = send_base + transferred_bytes;
             cout << "seq " << seq_number << endl;
@@ -184,10 +175,6 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
             if (cur_ack > send_base){
                 cwnd++;
                 send_base = cur_ack;
-            }
-            if(check_timeout()){
-                cwnd = 1;
-                break;
             }
         }
         //cout << "here" << endl;
