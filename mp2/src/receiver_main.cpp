@@ -94,6 +94,8 @@ void reliablyReceive(unsigned short int myUDPport, char* destinationFile) {
 	ofstream file;
 	file.open(destinationFile);
 	file << "";
+	file.close();
+	file.open(destinationFile, ofstream::out | ofstream::app);
 	while (true){
 		if ((recvBytes = recvfrom(s, recv_buf, 8 , 0, (struct sockaddr *) &si_other, &slen)) == -1) {
 			perror("recvfrom");
