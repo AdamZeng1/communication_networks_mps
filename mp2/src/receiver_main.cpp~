@@ -57,7 +57,7 @@ void bytes_to_string(string * recv_pkt, char * buf, int idx, int num_bytes){
 
 int sendACK(int ack_num){
 	int sentBytes = 0;
-	//cout << "sending ACK: " << ack_num << endl;
+	cout << "sending ACK: " << ack_num << endl;
 	string packet = pack_int_to_bytes(ack_num);
 	if ((sentBytes = sendto(s, packet.data(), packet.length(), 0, (struct sockaddr *) &si_other, slen)) == -1) {
 		diep( (char *) "send");
@@ -115,11 +115,11 @@ void reliablyReceive(unsigned short int myUDPport, char* destinationFile) {
 		recv_pkt = "";
 		bytes_to_string(&recv_pkt, recv_buf, 0, recvBytes);
 		seq_num = pack_bytes_to_int(recv_pkt.substr(0, 4));
-		//cout << "sequence number: " << seq_num << endl;
+		cout << "sequence number: " << seq_num << endl;
 
 		if (seq_num == 6969){
 			expected_file_size = pack_bytes_to_int(recv_pkt.substr(4, 4));
-			//cout << "exepcted file size: " << expected_file_size << endl;
+			cout << "exepcted file size: " << expected_file_size << endl;
 			sendACK(6969);
 			if (expected_file_size == 0){
 				return; 	// might need to change for empty files and want to keep receiver running
@@ -137,20 +137,20 @@ void reliablyReceive(unsigned short int myUDPport, char* destinationFile) {
 		recv_pkt = "";
 		bytes_to_string(&recv_pkt, recv_buf, 0, recvBytes);
 		//cout << recv_pkt << endl;
-		//cout << "bytes received: " << recvBytes << endl;
+		cout << "bytes received: " << recvBytes << endl;
 		seq_num = pack_bytes_to_int(recv_pkt.substr(0, 4));
-		//cout << "sequence number: " << seq_num << endl;
+		cout << "sequence number: " << seq_num << endl;
 
 		msg = recv_pkt.substr(4,recvBytes-4);
 
 		if (seq_num == expected_seq_num){
 			// deliver data: to file
 			dupAck_count = 0;
-			//cout << "msg size " << msg.length() << endl;
+			cout << "msg size " << msg.length() << endl;
 			add_to_file(destinationFile, msg);
 			expected_seq_num += recvBytes - 4; // don't count seq_num in recvBytes
 			sendACK(expected_seq_num);
-			//cout << "expected seq num: " << expected_seq_num << endl;
+			cout << "expected seq num: " << expected_seq_num << endl;
 			if (expected_seq_num == expected_file_size)
 				break;
 		}
