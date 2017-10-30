@@ -29,7 +29,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <errno.h>
-#define MTU 1400 
+#define MTU 1468 
 
 using namespace std;
 
@@ -41,7 +41,6 @@ float ss_thresh = 20;
 int send_base = 0;
 int last_ack = 0;
 float cwnd = 1;
-int acks_received = 0;
 
 void diep(char *s) {
 	perror(s);
@@ -179,10 +178,10 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 					if (cwnd < 1){
 						cwnd = 1;
 					}
-					//ss_thresh = cwnd;
-					//if (cwnd < 2){
-					//	ss_thresh = 10;
-					//}
+					ss_thresh = cwnd;
+					if (cwnd < 2){
+						ss_thresh = 20;
+					}
 					break;
 				}
 				perror("recvfrom");
@@ -201,7 +200,6 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 					cwnd++;
 				}
 				send_base = cur_ack;
-				acks_received++;
 			}
 			else if (cur_ack == send_base) {
 				dup_ack++;
@@ -211,10 +209,10 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 					if (cwnd < 1){
 						cwnd = 1;
 					}
-					//ss_thresh = cwnd;
-					//if (cwnd < 2){
-					//	ss_thresh = 10;
-					//}
+					ss_thresh = cwnd;
+					if (cwnd < 2){
+						ss_thresh = 20;
+					}
 					//cout << " send base: " << send_base << " cwnd: " << cwnd << " ssthresh: " << ss_thresh << " loop_end " << loop_end << endl;
 					break;
 				}
