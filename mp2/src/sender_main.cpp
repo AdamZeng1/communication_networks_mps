@@ -37,7 +37,7 @@ struct sockaddr_in si_other;
 int s;
 socklen_t slen;
 
-float ss_thresh = 10;
+float ss_thresh = 20;
 int send_base = 0;
 int last_ack = 0;
 float cwnd = 1;
