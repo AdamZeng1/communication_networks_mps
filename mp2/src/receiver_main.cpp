@@ -93,6 +93,7 @@ void reliablyReceive(unsigned short int myUDPport, char* destinationFile) {
 
 	int expected_seq_num = 0;
 	unsigned int expected_file_size = 0;
+	int dupAck_count = 0;
 
 	if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
 		diep((char *)"socket");
@@ -144,7 +145,8 @@ void reliablyReceive(unsigned short int myUDPport, char* destinationFile) {
 
 		if (seq_num == expected_seq_num){
 			// deliver data: to file
-			cout << "msg size: " << msg.length() << endl;
+			dupAck_count = 0;
+			cout << "msg size " << msg.length() << endl;
 			add_to_file(destinationFile, msg);
 			expected_seq_num += recvBytes - 4; // don't count seq_num in recvBytes
 			sendACK(expected_seq_num);
@@ -154,7 +156,11 @@ void reliablyReceive(unsigned short int myUDPport, char* destinationFile) {
 		}
 		else {
 			// discard packet, no buffering
-			sendACK(expected_seq_num);
+			if (dupAck_count < 5){
+				sendACK(expected_seq_num);
+				dupAck_count++;
+				continue;
+			}
 		}
 	}
 
