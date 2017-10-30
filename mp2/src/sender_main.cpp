@@ -108,7 +108,7 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 
 	struct timeval tv;
 	tv.tv_sec = 0;
-	tv.tv_usec = 25000; //100ms
+	tv.tv_usec = 22000; //100ms
 	setsockopt(s,SOL_SOCKET,SO_RCVTIMEO,&tv,sizeof(struct timeval));
 
 	string packet;
