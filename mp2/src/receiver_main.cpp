@@ -17,7 +17,7 @@
 #include <pthread.h>
 #include <fstream>
 #include <iostream>
-#define MTU 1400
+#define MTU 1468
 #define MYPORT "4950"
 using namespace std;
 
@@ -66,21 +66,6 @@ int sendACK(int ack_num){
 	return 1;
 }
 
-void add_to_file(char* destinationFile, string msg){
-	//cout << "appending to file: " << msg << endl;
-	ofstream file;
-	file.open(destinationFile, ofstream::out | ofstream::app);
-	file << msg;
-	file.close();
-	return;
-}
-
-void init_file(char * destinationFile){
-	ofstream file;
-	file.open(destinationFile);
-	file << "";
-	file.close();
-}
 
 void reliablyReceive(unsigned short int myUDPport, char* destinationFile) {
 	slen = sizeof (si_other);
@@ -106,7 +91,9 @@ void reliablyReceive(unsigned short int myUDPport, char* destinationFile) {
 	if (bind(s, (struct sockaddr*) &si_me, sizeof (si_me)) == -1)
 		diep((char *)"bind");
 
-	init_file(destinationFile);
+	ofstream file;
+	file.open(destinationFile);
+	file << "";
 	while (true){
 		if ((recvBytes = recvfrom(s, recv_buf, 8 , 0, (struct sockaddr *) &si_other, &slen)) == -1) {
 			perror("recvfrom");
@@ -147,7 +134,7 @@ void reliablyReceive(unsigned short int myUDPport, char* destinationFile) {
 			// deliver data: to file
 			dupAck_count = 0;
 			//cout << "msg size " << msg.length() << endl;
-			add_to_file(destinationFile, msg);
+			file << msg;
 			expected_seq_num += recvBytes - 4; // don't count seq_num in recvBytes
 			sendACK(expected_seq_num);
 			//cout << "expected seq num: " << expected_seq_num << endl;
@@ -165,6 +152,7 @@ void reliablyReceive(unsigned short int myUDPport, char* destinationFile) {
 	}
 
 	close(s);
+	file.close();
 	cout << destinationFile << " received!" << endl;;
 	return;
 }
