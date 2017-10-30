@@ -41,6 +41,7 @@ float ss_thresh = 20;
 int send_base = 0;
 int last_ack = 0;
 float cwnd = 1;
+int acks_received = 0;
 
 void diep(char *s) {
 	perror(s);
@@ -191,7 +192,7 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 			ack_pkt = "";
 			bytes_to_string(&ack_pkt, ack_buf, 0, recvBytes);
 			cur_ack = bytes_to_int(ack_pkt); 
-			cout << "ack received: "<< cur_ack << " send base: " << send_base << " cwnd: " << cwnd << " loop_end " << loop_end << endl;
+			cout << "ack received: "<< cur_ack << " send base: " << send_base << " cwnd: " << cwnd << "ss_thresh: " << ss_thresh << "acks_received: " << acks_received << endl;
 			if (cur_ack > send_base){
 				if (cwnd >= ss_thresh){
 					cwnd += 1/cwnd;
@@ -200,6 +201,7 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 					cwnd++;
 				}
 				send_base = cur_ack;
+				acks_received++;
 			}
 			else if (cur_ack == send_base) {
 				dup_ack++;
