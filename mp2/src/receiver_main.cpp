@@ -55,15 +55,14 @@ void bytes_to_string(string * recv_pkt, char * buf, int idx, int num_bytes){
 	return;
 }
 
-int sendACK(int ack_num){
+void sendACK(int ack_num){
 	int sentBytes = 0;
 	//cout << "sending ACK: " << ack_num << endl;
 	string packet = pack_int_to_bytes(ack_num);
 	if ((sentBytes = sendto(s, packet.data(), packet.length(), 0, (struct sockaddr *) &si_other, slen)) == -1) {
 		diep( (char *) "send");
-		return -1;
 	}
-	return 1;
+	return;
 }
 
 
@@ -72,6 +71,7 @@ void reliablyReceive(unsigned short int myUDPport, char* destinationFile) {
 	char recv_buf[MTU+4];
 	string recv_pkt;
 	string msg;
+	string full_msg = "";
 
 	int recvBytes = 0;
 	int seq_num = -1;
@@ -95,7 +95,6 @@ void reliablyReceive(unsigned short int myUDPport, char* destinationFile) {
 	file.open(destinationFile);
 	file << "";
 	file.close();
-	file.open(destinationFile, ofstream::out | ofstream::app);
 	while (true){
 		if ((recvBytes = recvfrom(s, recv_buf, 8 , 0, (struct sockaddr *) &si_other, &slen)) == -1) {
 			perror("recvfrom");
@@ -136,7 +135,7 @@ void reliablyReceive(unsigned short int myUDPport, char* destinationFile) {
 			// deliver data: to file
 			dupAck_count = 0;
 			//cout << "msg size " << msg.length() << endl;
-			file << msg;
+			full_msg += msg;
 			expected_seq_num += recvBytes - 4; // don't count seq_num in recvBytes
 			sendACK(expected_seq_num);
 			//cout << "expected seq num: " << expected_seq_num << endl;
@@ -154,6 +153,8 @@ void reliablyReceive(unsigned short int myUDPport, char* destinationFile) {
 	}
 
 	close(s);
+	file.open(destinationFile, ofstream::out | ofstream::app);
+	file << full_msg;
 	file.close();
 	cout << destinationFile << " received!" << endl;;
 	return;
