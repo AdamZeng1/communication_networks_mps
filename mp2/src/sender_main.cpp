@@ -179,8 +179,8 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 						cwnd = 1;
 					}
 					ss_thresh = cwnd;
-					if (cwnd > 10){
-						ss_thresh = 46;
+					if (cwnd > 4){
+						ss_thresh = 36;
 					}
 					break;
 				}
@@ -212,8 +212,8 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 						cwnd = 1;
 					}
 					ss_thresh = cwnd;
-					if (cwnd > 10){
-						ss_thresh = 46;
+					if (cwnd > 4){
+						ss_thresh = 36;
 					}
 					//cout << " send base: " << send_base << " cwnd: " << cwnd << " ssthresh: " << ss_thresh << " loop_end " << loop_end << endl;
 					dup_flag = true;
