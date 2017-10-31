@@ -144,7 +144,7 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 		int packets_in_window = 0, transferred_bytes = 0;
 		while (packets_in_window < (int) cwnd) {
 			int seq_number = send_base + transferred_bytes;
-			cout << "seq " << seq_number << endl;
+			//cout << "seq " << seq_number << endl;
 			if (seq_number > bytesToTransfer){
 				//cout << "here";
 				break;
@@ -179,7 +179,7 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 						cwnd = 1;
 					}
 					ss_thresh = cwnd;
-					if (cwnd > 5){
+					if (cwnd > 10){
 						ss_thresh = 46;
 					}
 					break;
@@ -191,7 +191,7 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 			ack_pkt = "";
 			bytes_to_string(&ack_pkt, ack_buf, 0, recvBytes);
 			cur_ack = bytes_to_int(ack_pkt); 
-			cout << "ack received: "<< cur_ack << " send base: " << send_base << " cwnd: " << cwnd << "ss_thresh: " << ss_thresh << endl;
+			//cout << "ack received: "<< cur_ack << " send base: " << send_base << " cwnd: " << cwnd << "ss_thresh: " << ss_thresh << endl;
 			if (cur_ack > send_base){
 				if (cwnd >= ss_thresh){
 					cwnd += 1/cwnd;
@@ -206,21 +206,21 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 			else if (cur_ack == send_base) {
 				dup_ack++;
 				if (dup_ack == 3){
-					cout << "3 dupAcks received" << endl;
+					//cout << "3 dupAcks received" << endl;
 					cwnd /= 2;
 					if (cwnd < 1){
 						cwnd = 1;
 					}
 					ss_thresh = cwnd;
-					if (cwnd > 5){
+					if (cwnd > 10){
 						ss_thresh = 46;
 					}
-					cout << " send base: " << send_base << " cwnd: " << cwnd << " ssthresh: " << ss_thresh << " loop_end " << loop_end << endl;
+					//cout << " send base: " << send_base << " cwnd: " << cwnd << " ssthresh: " << ss_thresh << " loop_end " << loop_end << endl;
 					dup_flag = true;
 					break;
 				}
 				if(dup_flag){
-					cout << "dup++" << endl;
+					//cout << "dup++" << endl;
 					cwnd++;
 				}
 			}

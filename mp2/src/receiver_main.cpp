@@ -139,7 +139,7 @@ void reliablyReceive(unsigned short int myUDPport, char* destinationFile) {
 			expected_seq_num += recvBytes - 4; // don't count seq_num in recvBytes
 			sendACK(expected_seq_num);
 			//cout << "expected seq num: " << expected_seq_num << endl;
-			if (expected_seq_num == expected_file_size)
+			if (expected_seq_num >= expected_file_size)
 				break;
 		}
 		else {
