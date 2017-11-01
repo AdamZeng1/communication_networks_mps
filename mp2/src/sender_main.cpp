@@ -37,7 +37,7 @@ struct sockaddr_in si_other;
 int s;
 socklen_t slen;
 
-float ss_thresh = 46;
+float ss_thresh = 67;
 int send_base = 0;
 int last_ack = 0;
 float cwnd = 1;
@@ -145,8 +145,8 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 		while (packets_in_window < (int) cwnd) {
 			int seq_number = send_base + transferred_bytes;
 			//cout << "seq " << seq_number << endl;
-			if (seq_number > bytesToTransfer){
-				//cout << "here";
+			if (seq_number >= bytesToTransfer){
+				cout << "seq number: " << seq_number << "bytes_to_transfer: " << bytesToTransfer ;
 				break;
 			}
 
@@ -158,7 +158,7 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 				packet = sequence_message + file_string.substr(seq_number, MTU);
 			}
 			
-			//cout << packet << endl;
+			cout << seq_number << endl;
 			if ((sentBytes = sendto(s, packet.data(), packet.length(), 0, (struct sockaddr *) &si_other, slen)) == -1) {
 				diep( (char *) "send");
 				exit(1);
@@ -178,10 +178,7 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 					if (cwnd < 1){
 						cwnd = 1;
 					}
-					ss_thresh = cwnd;
-					if (cwnd > 4){
-						ss_thresh = 36;
-					}
+					ss_thresh = 32;
 					break;
 				}
 				perror("recvfrom");
@@ -191,7 +188,7 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 			ack_pkt = "";
 			bytes_to_string(&ack_pkt, ack_buf, 0, recvBytes);
 			cur_ack = bytes_to_int(ack_pkt); 
-			//cout << "ack received: "<< cur_ack << " send base: " << send_base << " cwnd: " << cwnd << "ss_thresh: " << ss_thresh << endl;
+			cout << "ack received: "<< cur_ack << " send base: " << send_base << " cwnd: " << cwnd << "ss_thresh: " << ss_thresh << endl;
 			if (cur_ack > send_base){
 				if (cwnd >= ss_thresh){
 					cwnd += 1/cwnd;
@@ -211,9 +208,11 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 					if (cwnd < 1){
 						cwnd = 1;
 					}
-					ss_thresh = cwnd;
-					if (cwnd > 4){
-						ss_thresh = 36;
+					if (cwnd > 32){
+						ss_thresh *= 1.25;
+						if (ss_thresh > 67){
+							ss_thresh = 67;
+						}
 					}
 					//cout << " send base: " << send_base << " cwnd: " << cwnd << " ssthresh: " << ss_thresh << " loop_end " << loop_end << endl;
 					dup_flag = true;
@@ -255,6 +254,6 @@ int main(int argc, char** argv) {
 	reliablyTransfer(argv[1], udpPort, argv[3], numBytes);
 
 	int end = time(NULL);
-	cout << (end - start) << endl;
+	//cout << (end - start) << endl;
 	return (EXIT_SUCCESS);
 }
