@@ -178,8 +178,8 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 					if (cwnd < 1){
 						cwnd = 1;
 					}
-					ss_thresh = cwnd * 2;
-					//ss_thresh = 32;
+					//ss_thresh = cwnd * 2;
+					ss_thresh = 32;
 					break;
 				}
 				perror("recvfrom");
@@ -205,24 +205,20 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 				dup_ack++;
 				if (dup_ack == 3){
 					//cout << "3 dupAcks received" << endl;
+					if (cwnd > 32){
+						ss_thresh = 67;
+					}
 					cwnd /= 2;
 					if (cwnd < 1){
 						cwnd = 1;
 					}
-					ss_thresh = cwnd * 2;
-					//if (cwnd > 32){
-					//	ss_thresh *= 1.25;
-					//	if (ss_thresh > 67){
-					//		ss_thresh = 67;
-					//	}
-					//}
 					//cout << " send base: " << send_base << " cwnd: " << cwnd << " ssthresh: " << ss_thresh << " loop_end " << loop_end << endl;
 					dup_flag = true;
 					break;
 				}
 				if(dup_flag){
 					//cout << "dup++" << endl;
-					cwnd+= 1/cwnd;
+					cwnd++;
 				}
 			}
 		}
