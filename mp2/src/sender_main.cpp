@@ -222,7 +222,7 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 				}
 				if(dup_flag){
 					//cout << "dup++" << endl;
-					cwnd++;
+					cwnd+= 1/cwnd;
 				}
 			}
 		}
