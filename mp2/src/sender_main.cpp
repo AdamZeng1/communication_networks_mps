@@ -37,7 +37,7 @@ struct sockaddr_in si_other;
 int s;
 socklen_t slen;
 
-float ss_thresh = 67;
+float ss_thresh = 20;
 int send_base = 0;
 int last_ack = 0;
 float cwnd = 1;
@@ -117,7 +117,6 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 	unsigned int cur_ack = 0;
 	string ack_pkt;
 	int dup_ack = 0;
-	bool dup_flag = false;
 	while(true){
 		string sequence_message = pack_int_to_bytes(6969);
 		packet = sequence_message + pack_int_to_bytes(bytesToTransfer);
@@ -141,12 +140,13 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 
 	cur_ack = 0;
 	while (send_base < bytesToTransfer) {
+		dup_ack = 0;
 		int packets_in_window = 0, transferred_bytes = 0;
 		while (packets_in_window < (int) cwnd) {
 			int seq_number = send_base + transferred_bytes;
 			//cout << "seq " << seq_number << endl;
-			if (seq_number >= bytesToTransfer){
-				cout << "seq number: " << seq_number << "bytes_to_transfer: " << bytesToTransfer ;
+			if (seq_number > bytesToTransfer){
+				//cout << "here";
 				break;
 			}
 
@@ -158,7 +158,7 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 				packet = sequence_message + file_string.substr(seq_number, MTU);
 			}
 			
-			cout << seq_number << endl;
+			//cout << packet << endl;
 			if ((sentBytes = sendto(s, packet.data(), packet.length(), 0, (struct sockaddr *) &si_other, slen)) == -1) {
 				diep( (char *) "send");
 				exit(1);
@@ -173,13 +173,15 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 		while(cur_ack < loop_end) {
 			if ((recvBytes = recvfrom(s, ack_buf, 4 , 0, (struct sockaddr *) &si_other, &slen)) == -1) {
 				if (EAGAIN | EWOULDBLOCK){
-					cout << "timeout waiting for: " << send_base << endl;
+					//cout << "timeout waiting for: " << send_base << endl;
 					cwnd /= 2;
 					if (cwnd < 1){
 						cwnd = 1;
 					}
-					//ss_thresh = cwnd * 2;
-					ss_thresh = 32;
+					ss_thresh = cwnd;
+					if (cwnd < 2){
+						ss_thresh = 20;
+					}
 					break;
 				}
 				perror("recvfrom");
@@ -189,7 +191,7 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 			ack_pkt = "";
 			bytes_to_string(&ack_pkt, ack_buf, 0, recvBytes);
 			cur_ack = bytes_to_int(ack_pkt); 
-			cout << "ack received: "<< cur_ack << " send base: " << send_base << " cwnd: " << cwnd << "ss_thresh: " << ss_thresh << endl;
+			//cout << "ack received: "<< cur_ack << " send base: " << send_base << " cwnd: " << cwnd << "ss_thresh: " << ss_thresh << "acks_received: " << acks_received << endl;
 			if (cur_ack > send_base){
 				if (cwnd >= ss_thresh){
 					cwnd += 1/cwnd;
@@ -197,28 +199,22 @@ void reliablyTransfer(char* hostname, unsigned short int hostUDPport, char* file
 				else{
 					cwnd++;
 				}
-				dup_flag = false;
-				dup_ack = 0;
 				send_base = cur_ack;
 			}
 			else if (cur_ack == send_base) {
 				dup_ack++;
 				if (dup_ack == 3){
 					//cout << "3 dupAcks received" << endl;
-					if (cwnd > 32){
-						ss_thresh = 67;
-					}
 					cwnd /= 2;
 					if (cwnd < 1){
 						cwnd = 1;
 					}
+					ss_thresh = cwnd;
+					if (cwnd < 2){
+						ss_thresh = 20;
+					}
 					//cout << " send base: " << send_base << " cwnd: " << cwnd << " ssthresh: " << ss_thresh << " loop_end " << loop_end << endl;
-					dup_flag = true;
 					break;
-				}
-				if(dup_flag){
-					//cout << "dup++" << endl;
-					cwnd++;
 				}
 			}
 		}
@@ -247,11 +243,9 @@ int main(int argc, char** argv) {
 	udpPort = (unsigned short int) atoi(argv[2]);
 	numBytes = atoll(argv[4]);
 
-	int start = time(NULL);
-	
+
+
 	reliablyTransfer(argv[1], udpPort, argv[3], numBytes);
 
-	int end = time(NULL);
-	//cout << (end - start) << endl;
 	return (EXIT_SUCCESS);
 }
