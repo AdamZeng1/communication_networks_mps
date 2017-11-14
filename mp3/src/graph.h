@@ -9,9 +9,9 @@
 using namespace std;
 
 class Graph{
-
-	int num_nodes;
-	std::vector<Node> nodes;
+	private:
+		int num_nodes;
+		std::vector<Node> nodes;
 
 	public:
 		Graph();
@@ -21,4 +21,5 @@ class Graph{
 		int remove_node(int);
 		Node * get_node(int);
 		int add_edge(int, int, int);
+		void linkstate_init();
 };
