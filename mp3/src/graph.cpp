@@ -5,7 +5,11 @@ Graph::Graph(){
 
 void Graph::print_nodes(){
 	for(vector<Node>::iterator it = this->nodes.begin(); it != this->nodes.end(); ++it) {
-		cout << it->get_id() << endl;
+		cout << "costs for node num: " << it->get_id() << endl;
+		map<int, int> costs = it->get_distances();
+		for (auto it: costs){
+			cout << "dest: " << it.first << " cost: " << it.second << endl;
+		}
 	}
 }
 

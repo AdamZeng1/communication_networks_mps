@@ -9,7 +9,7 @@ int Node::get_id(){
 }
 
 int Node::add_edge(int id, int cost){	
-	if(this->distances.count(id)){
+	if(!this->distances.count(id)){
 		this->distances[id] = cost;
 		return 1;
 	}
@@ -30,6 +30,10 @@ int Node::get_cost(int id){
 		return this->distances[id];
 	}
 	return -1;
+}
+
+map<int, int> Node::get_distances(){
+	return this->distances;
 }
 
 

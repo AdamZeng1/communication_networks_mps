@@ -21,6 +21,7 @@ int main(int argc, char** argv) {
 	Graph topo_graph = Graph();
 	parseTopology(topo_file, &topo_graph);
 	topo_graph.print_nodes();
+	//int change_fxn = parseChanges(changes_file);
 
 	ofstream out_file;
 	out_file.open("output.txt");
