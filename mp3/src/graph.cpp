@@ -9,27 +9,50 @@ void Graph::print_nodes(){
 	}
 }
 
-bool Graph::node_in_graph(int id){
+vector<Node>::iterator Graph::node_in_graph(int id){
 	for(vector<Node>::iterator it = this->nodes.begin(); it != this->nodes.end(); ++it) {
 		if(it->get_id() == id){
-			return true;
+			return it;
 		}
 	}
-	return false;
+	return this->nodes.end();
 }
-int Graph::add_node(int id){
-	if(!this->node_in_graph(id)){
+Node * Graph::add_node(int id){
+	Node * node = this->get_node(id);
+	if(!node){
 		this->nodes.push_back(Node(id));
 		this->num_nodes++;
+		node = this->get_node(id);
+	}
+	return node;
+}
+int Graph::remove_node(int id){
+	vector<Node>::iterator it = this->node_in_graph(id);
+	
+	if(this->nodes.end() != it){
+		this->nodes.erase(it);
+		this->num_nodes--;
 	}
 	return this->num_nodes;
 }
-int Graph::remove_node(int id){
+
+Node * Graph::get_node(int id){
 	for(vector<Node>::iterator it = this->nodes.begin(); it != this->nodes.end(); ++it) {
 		if(it->get_id() == id){
-			this->nodes.erase(it);
-			this->num_nodes--;
+			return &(*it);
 		}
 	}
-	return this->num_nodes;
+	return NULL;
+}
+
+int Graph::add_edge(int id_1, int id_2, int cost){
+	Node * node_1 = this->add_node(id_1);
+	Node * node_2 = this->add_node(id_2);
+
+	if(node_1 && node_2){
+		node_1->add_edge(id_2, cost);
+		node_2->add_edge(id_1, cost);
+		return 1;
+	}
+	return 0;
 }

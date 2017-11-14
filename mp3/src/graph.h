@@ -16,7 +16,9 @@ class Graph{
 	public:
 		Graph();
 		void print_nodes();
-		bool node_in_graph(int);
-		int add_node(int);
+		vector<Node>::iterator node_in_graph(int);
+		Node * add_node(int);
 		int remove_node(int);
+		Node * get_node(int);
+		int add_edge(int, int, int);
 };
