@@ -6,11 +6,13 @@
 #include <sstream> 
 #include <streambuf>
 
+#include "graph.h"
+
 using namespace std;
 
 void getTopoNumbers(string line, int * src_id, int * dest_id, int * cost);
 void getMsgNumbers(string line, int * src_id, int * dest_id, string * msg);
-int parseTopology(char * filename);
+int parseTopology(char * filename, Graph * g);
 int parseMessages(char * filename);
 
 #endif

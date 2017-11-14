@@ -18,7 +18,9 @@ int main(int argc, char** argv) {
 	char * msg_file = argv[2];
 	char * changes_file = argv[3];
 
-	parseTopology(topo_file);
+	Graph topo_graph = Graph();
+	parseTopology(topo_file, &topo_graph);
+	topo_graph.print_nodes();
 
 	ofstream out_file;
 	out_file.open("output.txt");
