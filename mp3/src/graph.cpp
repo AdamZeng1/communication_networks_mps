@@ -3,20 +3,20 @@
 Graph::Graph(){
 }
 void Graph::linkstate_init(){
-	for(vector<Node>::iterator it = this->nodes.begin(); it != this->nodes.end(); ++it) {
-		map<int, int> * distances = it->get_distances();
-		distances->clear();
+	/*for(vector<Node>::iterator it = this->nodes.begin(); it != this->nodes.end(); ++it) {
+		map<int, int> distances = (*it).get_distances();
+		distances.clear();
 	}
 	for(vector<Node>::iterator it = this->nodes.begin(); it != this->nodes.end(); ++it) {
 		linkstate_init_node(&(*it));
 	}
-	return;
+	return;*/
 }
-
+/*
 void Graph::linkstate_init_node(Node * node){
 	map<Node *, int> 
-	map<int, int> * distances = it->get_distances();
-	map<int, int> * neighbors = it->get_neighbors();
+	map<int, int> distances = it->get_distances();
+	map<int, int> neighbors = it->get_neighbors();
 
 	for (vector<Node>::iterator it = this->nodes.begin(); it != this->nodes.end(); ++it){
 		Node * v = &(*it);
@@ -28,12 +28,12 @@ void Graph::linkstate_init_node(Node * node){
 
 
 }
-
+*/
 void Graph::print_nodes(){
 	for(vector<Node>::iterator it = this->nodes.begin(); it != this->nodes.end(); ++it) {
 		cout << "costs for node num: " << it->get_id() << endl;
-		map<int, int> * costs = it->get_neighbors();
-		for (auto it: *costs){
+		map<int, int> costs = it->get_neighbors();
+		for (auto it: costs){
 			cout << "dest: " << it.first << " cost: " << it.second << endl;
 		}
 	}

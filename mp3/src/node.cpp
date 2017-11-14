@@ -32,11 +32,11 @@ int Node::get_cost(int id){
 	return -1;
 }
 
-map<int, int> * Node::get_neighbors(){
-	return & (this->neighbors);
+map<int, int> &  Node::get_neighbors(){
+	return  (this->neighbors);
 }
 
-map<int, int> * Node::get_distances(){
-	return &(this->distances);
+map<int, int> & Node::get_distances(){
+	return (this->distances);
 }
 

@@ -18,7 +18,7 @@ class Node {
 		int remove_edge(int);
 		int update_edge(int, int);
 		int get_cost(int);
-		map<int, int> * get_neighbors();
-		map<int, int> * get_distances();
+		map<int, int> & get_neighbors();
+		map<int, int> & get_distances();
 
 };
