@@ -104,7 +104,7 @@ void Graph::print_topology_entries(){
 		for (auto d: distances){
 			if (d.first == min_num){
 				//cout << d.first << " " << min_num << " " << 0<< endl;
-				out_string = to_string(d.first) + " " + to_string(min_num) + "0\n";
+				out_string = to_string(d.first) + " " + to_string(min_num) + " 0\n";
 				out_file << out_string;
 			}
 			else{
