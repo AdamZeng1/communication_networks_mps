@@ -185,6 +185,9 @@ void Graph::linkstate_init_node(Node & node){
 		map<int, int> w_neighbors = w->get_neighbors();
 		for (auto w_d: w_neighbors){
 			if(find(visited.begin(), visited.end(), w_d.first) == visited.end()){
+				if(distances[min_node].second == 99999999 || w_d.second == 99999999){
+					continue;
+				}
 				if (distances[w_d.first].second > distances[min_node].second + w_d.second){
 					distances[w_d.first] = make_pair(distances[min_node].first, distances[min_node].second + w_d.second);
 				}
