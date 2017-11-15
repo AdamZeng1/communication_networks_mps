@@ -3,13 +3,14 @@
 #include <map>
 #include <iostream>
 
+#include <utility>
 using namespace std; 
 
 class Node {
 	private: 
 		int id;
 		map<int, int> neighbors;
-		map<int, int> distances;
+		map<int, pair<int, int> > distances;
 
 	public:
 		Node(int);
@@ -19,6 +20,7 @@ class Node {
 		int update_edge(int, int);
 		int get_cost(int);
 		map<int, int> & get_neighbors();
-		map<int, int> & get_distances();
+		map<int, pair<int, int> > & get_distances();
+		bool printed;
 
 };

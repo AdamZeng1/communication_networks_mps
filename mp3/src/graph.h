@@ -6,6 +6,7 @@
 #include "node.h"
 #include <iostream>
 #include <algorithm>
+#include <utility>
 
 using namespace std;
 
@@ -25,8 +26,11 @@ class Graph{
 
 		void linkstate_init();
 		void linkstate_init_node(Node & node);
+		void print_topology_entries();
+
 
 		void distance_vector_init();
-		bool distance_vector_process_node(Node);
-		void set_init_distances_DV(map<int, int> & distances);
+		bool distance_vector_process_node(Node * n);
+		void set_init_distances_DV(map<int, pair<int,int> > & distances);
+
 };

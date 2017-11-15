@@ -36,7 +36,7 @@ map<int, int> &  Node::get_neighbors(){
 	return  (this->neighbors);
 }
 
-map<int, int> & Node::get_distances(){
+map<int, pair<int, int> > & Node::get_distances(){
 	return (this->distances);
 }
 
