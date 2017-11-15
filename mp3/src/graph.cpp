@@ -97,6 +97,9 @@ void Graph::print_topology_entries(){
 				min_node = &(*it);
 			}
 		}
+		if(min_node == NULL){
+			break;
+		}
 		// print topology info for min_node: destination | nexthop | pathcost
 		//cout << "<topology entries for node: " << min_num << ">" << endl;
 		map<int, pair<int, int> > distances = min_node->get_distances();
