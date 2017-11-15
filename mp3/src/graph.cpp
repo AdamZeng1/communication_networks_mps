@@ -82,6 +82,13 @@ void Graph::linkstate_init_node(Node & node){
 					min_node = it_d.first;
 					min_cost = it_d.second.second;
 				}
+				else if (it_d.second.second == min_cost){
+					if(it_d.first < min_node){
+						min_node = it_d.first;
+						min_cost = it_d.second.second;
+					}
+				}
+
 			}
 		}
 		visited.push_back(min_node);
@@ -90,6 +97,9 @@ void Graph::linkstate_init_node(Node & node){
 		for (auto w_d: w_neighbors){
 			if(find(visited.begin(), visited.end(), w_d.first) == visited.end()){
 				if (distances[w_d.first].second > distances[min_node].second + w_d.second){
+					distances[w_d.first] = make_pair(distances[min_node].first, distances[min_node].second + w_d.second);
+				}
+				if (distances[w_d.first].second == distances[min_node].second + w_d.second){
 					distances[w_d.first] = make_pair(distances[min_node].first, distances[min_node].second + w_d.second);
 				}
 			}
@@ -162,6 +172,12 @@ bool Graph::distance_vector_process_node(Node * n){
 			if ( neighbor_cost_to_d < distances[d.first].second){
 				distances[d.first] = make_pair(distances[neighbor.first].first, neighbor_cost_to_d);
 				changed = true;
+			}
+			else if ( neighbor_cost_to_d == distances[d.first].second){
+				if ( distances[neighbor.first].first < distances[d.first].first) {
+					distances[d.first] = make_pair(distances[neighbor.first].first, neighbor_cost_to_d);
+					changed = true;
+				}
 			}
 		}
 	}
