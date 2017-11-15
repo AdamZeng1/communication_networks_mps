@@ -21,7 +21,8 @@ int main(int argc, char** argv) {
 
 	Graph g = Graph();
 	parseTopology(topo_file, &g);
-	g.print_nodes();
+	//g.print_nodes();
+	g.linkstate_init();
 
 	//int change_fxn = parseChanges(changes_file);
 

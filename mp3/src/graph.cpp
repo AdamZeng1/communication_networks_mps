@@ -3,32 +3,68 @@
 Graph::Graph(){
 }
 void Graph::linkstate_init(){
-	/*for(vector<Node>::iterator it = this->nodes.begin(); it != this->nodes.end(); ++it) {
-		map<int, int> distances = (*it).get_distances();
+	for(vector<Node>::iterator it = this->nodes.begin(); it != this->nodes.end(); ++it) {
+		map<int, int> & distances = (*it).get_distances();
 		distances.clear();
 	}
 	for(vector<Node>::iterator it = this->nodes.begin(); it != this->nodes.end(); ++it) {
-		linkstate_init_node(&(*it));
+		Node n = (*it);
+		linkstate_init_node(n);
+		cout << "distances for node: " << n.get_id() << endl;
+		map<int, int> d = n.get_distances();
+		for (auto p: d){
+			cout << "dest: " << p.first << " cost: " << p.second << endl;
+		}
 	}
-	return;*/
+	return;
 }
-/*
-void Graph::linkstate_init_node(Node * node){
-	map<Node *, int> 
-	map<int, int> distances = it->get_distances();
-	map<int, int> neighbors = it->get_neighbors();
+
+void Graph::linkstate_init_node(Node & node){
+	map<int, int> & distances = node.get_distances();
+	map<int, int> & neighbors = node.get_neighbors();
 
 	for (vector<Node>::iterator it = this->nodes.begin(); it != this->nodes.end(); ++it){
-		Node * v = &(*it);
-		if (neighbors->count(v->get_id())){
-			*distances[v->get_id()] = *neighbors[v->get_id()];
+		Node v = (*it);
+		if (neighbors.count(v.get_id())){
+			distances[v.get_id()] = neighbors[v.get_id()];
 		}
-
+		else{
+			distances[v.get_id()] = 99999999;
+		}
 	}
 
+	vector<int> visited;
+	visited.push_back(node.get_id());
+	int counter = 0;
+	while(counter != distances.size() && visited.size() != distances.size()){
+		int min_node = -1;
+		int min_cost = 99999999;
+		for (auto it_d: distances){
+			if(find(visited.begin(), visited.end(), it_d.first) == visited.end()){
+				if (it_d.second < min_cost){
+					min_cost = it_d.second;
+					min_node = it_d.first;
+				}
+			}
+		}
+		cout << min_cost << endl;
+		visited.push_back(min_node);
+		Node * w = this->get_node(min_node);
+		map<int, int> w_neighbors = w->get_neighbors();
+		for (auto w_d: w_neighbors){
+			if(find(visited.begin(), visited.end(), w_d.first) == visited.end()){
+				if (distances[w_d.first] > distances[min_node] + w_d.second){
+					distances[w_d.first] = distances[min_node] + w_d.second;
+				}
+			}
+		}
 
+		counter++;
+	}
+
+	return;
 }
-*/
+
 void Graph::print_nodes(){
 	for(vector<Node>::iterator it = this->nodes.begin(); it != this->nodes.end(); ++it) {
 		cout << "costs for node num: " << it->get_id() << endl;

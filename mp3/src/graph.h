@@ -5,6 +5,7 @@
 #include <vector>
 #include "node.h"
 #include <iostream>
+#include <algorithm>
 
 using namespace std;
 
@@ -21,5 +22,7 @@ class Graph{
 		int remove_node(int);
 		Node * get_node(int);
 		int add_edge(int, int, int);
+
 		void linkstate_init();
+		void linkstate_init_node(Node & node);
 };
