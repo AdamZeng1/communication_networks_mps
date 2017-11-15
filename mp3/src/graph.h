@@ -25,4 +25,8 @@ class Graph{
 
 		void linkstate_init();
 		void linkstate_init_node(Node & node);
+
+		void distance_vector_init();
+		bool distance_vector_process_node(Node);
+		void set_init_distances_DV(map<int, int> & distances);
 };

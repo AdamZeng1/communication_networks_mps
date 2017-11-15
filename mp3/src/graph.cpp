@@ -65,6 +65,65 @@ void Graph::linkstate_init_node(Node & node){
 	return;
 }
 
+void Graph::distance_vector_init(){
+	map<int, bool> messaged;
+	map<int, bool> new_messages;
+	bool still_converging = true;
+	for(vector<Node>::iterator it = this->nodes.begin(); it != this->nodes.end(); ++it) {
+		Node n = (*it);
+		map<int, int> & distances = n.get_distances();
+		messaged[n.get_id()] = true;
+		this->set_init_distances_DV(distances);
+		for (auto neighbor : n.get_neighbors()){
+			distances[neighbor.first] = neighbor.second;
+		}
+	}
+
+	while(still_converging){
+		still_converging = false;
+		for(auto m : messaged) {
+			if(m.second){
+				Node * n = this->get_node(m.first);
+				for(auto neighbor : n->get_neighbors()){
+					bool new_message = distance_vector_process_node(*(this->get_node(neighbor.first)));
+					new_messages[m.first] = new_message;
+					if (new_message){
+						still_converging = true;
+					}
+				}
+			}
+			else{
+				new_messages[m.first] = false;
+			}
+		}
+		messaged = new_messages;
+		new_messages.clear();
+	}
+	return;
+}
+
+bool Graph::distance_vector_process_node(Node n){
+	map <int, int> distances = n.get_distances();
+	bool changed = false;
+	for (auto d : distances)	
+		for (auto neighbor : n.get_neighbors()){
+			Node * v = this->get_node(neighbor.first);
+			map<int, int> neighbor_d = v->get_distances();
+			int neighbor_cost_to_d = neighbor_d[d.first] + distances[v->get_id()];
+			if ( neighbor_cost_to_d < d.second){
+				distances[v->get_id()] = neighbor_cost_to_d;
+				changed = true;
+			}
+		}
+		return changed;
+}
+
+void Graph::set_init_distances_DV(map<int, int> & distances){
+	distances.clear();
+	for(vector<Node>::iterator it = this->nodes.begin(); it != this->nodes.end(); ++it) {
+		distances[(*it).get_id()] = 99999999;
+	}
+}
 void Graph::print_nodes(){
 	for(vector<Node>::iterator it = this->nodes.begin(); it != this->nodes.end(); ++it) {
 		cout << "costs for node num: " << it->get_id() << endl;
