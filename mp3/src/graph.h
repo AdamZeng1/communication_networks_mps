@@ -1,3 +1,6 @@
+#ifndef GRAPH_H
+#define GRAPH_H
+
 #include <string.h>
 #include <stdlib.h>
 
@@ -7,6 +10,8 @@
 #include <iostream>
 #include <algorithm>
 #include <utility>
+
+#include "parser.h"
 
 using namespace std;
 
@@ -23,6 +28,8 @@ class Graph{
 		int remove_node(int);
 		Node * get_node(int);
 		int add_edge(int, int, int);
+		void update_edge(int, int, int);
+		void remove_edge(int, int);
 
 		void linkstate_init();
 		void linkstate_init_node(Node & node);
@@ -33,4 +40,10 @@ class Graph{
 		bool distance_vector_process_node(Node * n);
 		void set_init_distances_DV(map<int, pair<int,int> > & distances);
 
+		void apply_messages(char * filename);
+		void apply_changes(char * filename, char * msg_file, bool ls_dv);
+
+
 };
+
+#endif

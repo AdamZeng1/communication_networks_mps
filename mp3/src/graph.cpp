@@ -3,10 +3,93 @@
 Graph::Graph(){
 }
 
+void Graph::apply_messages(char * filename){
+	ifstream msg_file;
+	msg_file.open(filename);
+
+	ofstream out_file;
+	out_file.open("output.txt", ofstream::out | ofstream::app);
+	string out_string = "";
+
+	if (!msg_file){
+		return;
+	}
+	string line;
+	while (getline(msg_file, line)){
+		int src_id, dest_id;
+		string msg;
+		getMsgNumbers(line, &src_id, &dest_id, &msg);
+		Node * n = this->get_node(src_id);
+		int path_cost = (n->get_distances())[dest_id].second;
+		if (path_cost == 99999999){
+			//cout << "from " << src_id << " to " << dest_id << " cost infinite hops unreachable message " << msg << endl;
+			out_string = "from " + to_string(src_id) + " to " + to_string(dest_id) + " cost infinite hops unreachable message " + msg + "\n";
+			out_file << out_string;
+			continue;
+		}
+		else{
+			//cout << "from " << src_id << " to " << dest_id << " cost " << path_cost << " hops ";
+			out_string = "from " + to_string(src_id) + " to " + to_string(dest_id) + " cost " + to_string(path_cost) + " hops ";
+			out_file << out_string;
+			Node * cur_node = n;
+			while(cur_node->get_id() != dest_id){
+				//cout << cur_node->get_id() << " ";
+				out_string = to_string(cur_node->get_id()) + " ";
+				out_file << out_string;
+				int next_node = (cur_node->get_distances())[dest_id].first;
+				cur_node = this->get_node(next_node);
+			}
+			//cout << "message " << msg << endl;
+			out_string = "message " + msg + "\n";
+			out_file << out_string;
+		}
+	}
+	out_file.close();
+	return;
+}
+
+void Graph::apply_changes(char * filename, char * msg_file, bool ls_dv){
+	ifstream changes_file;
+	changes_file.open(filename);
+
+	ofstream out_file;
+	out_file.open("output.txt", ofstream::out | ofstream::app);
+
+	if (!changes_file){
+		return;
+	}
+	string line;
+	while (getline(changes_file, line)){
+		int src_id, dest_id, cost_change;
+		getChangeNumbers(line, &src_id, &dest_id, &cost_change);
+		if (cost_change == -999){
+			this->remove_edge(src_id, dest_id);
+		}
+		else{
+			this->update_edge(src_id, dest_id, cost_change);
+		}
+		if (ls_dv){
+			this->linkstate_init();
+		}
+		else{
+			this->distance_vector_init();
+		}
+		this->print_topology_entries();
+		this->apply_messages(msg_file);
+	}
+	out_file.close();
+	return;
+}
+
 void Graph::print_topology_entries(){
 	int min_num = 99999999;
 	Node * min_node = NULL;
 	int visited_nodes = 0;
+
+	ofstream out_file;
+	out_file.open("output.txt", ofstream::out | ofstream::app);
+	string out_string = "";
+
 	while(visited_nodes != this->num_nodes){
 		for(vector<Node>::iterator it = this->nodes.begin(); it != this->nodes.end(); ++it) {
 			if ((*it).get_id() < min_num && (*it).printed == false){
@@ -14,17 +97,20 @@ void Graph::print_topology_entries(){
 				min_node = &(*it);
 			}
 		}
-		// print topology info for min_node
-		// print destination | nexthop | pathcost
-		cout << "<topology entries for node: " << min_num << ">" << endl;
+		// print topology info for min_node: destination | nexthop | pathcost
+		//cout << "<topology entries for node: " << min_num << ">" << endl;
 		map<int, pair<int, int> > distances = min_node->get_distances();
 		// sort distances
 		for (auto d: distances){
 			if (d.first == min_num){
-				cout << d.first << " " << min_num << " " << 0<< endl;
+				//cout << d.first << " " << min_num << " " << 0<< endl;
+				out_string = to_string(d.first) + " " + to_string(min_num) + "0\n";
+				out_file << out_string;
 			}
 			else{
-				cout << d.first << " " << d.second.first << " " << d.second.second << endl;
+				//cout << d.first << " " << d.second.first << " " << d.second.second << endl;
+				out_string = to_string(d.first) + " " + to_string(d.second.first) + " " + to_string(d.second.second) + "\n";
+				out_file << out_string;
 			}
 		}
 		min_node->printed = true;
@@ -32,6 +118,7 @@ void Graph::print_topology_entries(){
 		min_node = NULL;
 		visited_nodes += 1;
 	}
+	out_file.close();
 	return;
 }
 
@@ -247,3 +334,22 @@ int Graph::add_edge(int id_1, int id_2, int cost){
 	}
 	return 0;
 }
+
+void Graph::remove_edge(int n1, int n2){
+	Node * n_1 = this->get_node(n1);
+	Node * n_2 = this->get_node(n2);
+
+	n_1->remove_edge(n2);
+	n_2->remove_edge(n1);
+	return;
+}
+
+void Graph::update_edge(int n1, int n2, int new_cost){
+	Node * n_1 = this->get_node(n1);
+	Node * n_2 = this->get_node(n2);
+
+	n_1->update_edge(n2, new_cost);
+	n_2->update_edge(n1, new_cost);
+	return;
+}
+

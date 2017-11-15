@@ -8,7 +8,6 @@
 
 using namespace std;
 
-
 int main(int argc, char** argv) {
 	//printf("Number of arguments: %d", argc);
 	if (argc != 4) {
@@ -19,19 +18,17 @@ int main(int argc, char** argv) {
 	char * msg_file = argv[2];
 	char * changes_file = argv[3];
 
+	ofstream out_file;
+	out_file.open("output.txt");
+	out_file << "";
+	out_file.close();
+
 	Graph g = Graph();
 	parseTopology(topo_file, &g);
 	g.linkstate_init();
 	g.print_topology_entries();
-
-	//int change_fxn = parseChanges(changes_file);
-
-	// while loop around changesfile
-
-
-	ofstream out_file;
-	out_file.open("output.txt");
-	out_file.close();
+	g.apply_messages(msg_file);
+	g.apply_changes(changes_file, msg_file, true);
 	return 0;
 }
 

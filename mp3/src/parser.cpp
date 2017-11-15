@@ -42,34 +42,3 @@ int parseTopology(char * filename, Graph * g){
 	return 1;
 }
 
-int parseMessages(char * filename){
-	ifstream msg_file;
-	msg_file.open(filename);
-
-	if (!msg_file){
-		return -1;
-	}
-	string line;
-	while (getline(msg_file, line)){
-		int src_id, dest_id;
-		string msg;
-		getMsgNumbers(line, &src_id, &dest_id, &msg);
-	}
-	return 1;
-}
-
-int parseChanges(char * filename){
-	ifstream changes_file;
-	changes_file.open(filename);
-
-	if (!changes_file){
-		return -1;
-	}
-	string line;
-	while (getline(changes_file, line)){
-		int src_id, dest_id, cost_change;
-		getChangeNumbers(line, &src_id, &dest_id, &cost_change);
-		cout << src_id << " " << dest_id << " " << cost_change << endl;
-	}
-	return 1;
-}

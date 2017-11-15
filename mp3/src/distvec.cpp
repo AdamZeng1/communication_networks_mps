@@ -18,16 +18,17 @@ int main(int argc, char** argv) {
 	char * msg_file = argv[2];
 	char * changes_file = argv[3];
 
+	ofstream out_file;
+	out_file.open("output.txt");
+	out_file << "";
+	out_file.close();
+
 	Graph g = Graph();
 	parseTopology(topo_file, &g);
 	g.distance_vector_init();
 	g.print_topology_entries();
-
-	//g.print_nodes();
-
-	ofstream out_file;
-	out_file.open("output.txt");
-	out_file.close();
+	g.apply_messages(msg_file);
+	g.apply_changes(changes_file, msg_file, false);
 	return 0;
 }
 
