@@ -1,4 +1,4 @@
-COMPILERFLAGS = -g -Wall -Wextra -Wno-sign-compare
+COMPILERFLAGS = -g -Wall -Wextra -Wno-sign-compare -std=c++11
 
 all:
 	make linkstate distvec 

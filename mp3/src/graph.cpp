@@ -162,7 +162,6 @@ void Graph::linkstate_init_node(Node & node){
 	while(counter != distances.size() && visited.size() != distances.size()){
 		int min_node = -1;
 		int min_cost = 99999999;
-		int min_hop = -1;
 		for (auto it_d: distances){
 			if(find(visited.begin(), visited.end(), it_d.first) == visited.end()){
 				if (it_d.second.second < min_cost){
