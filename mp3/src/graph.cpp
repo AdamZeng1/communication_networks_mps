@@ -191,8 +191,18 @@ void Graph::linkstate_init_node(Node & node){
 				if (distances[w_d.first].second > distances[min_node].second + w_d.second){
 					distances[w_d.first] = make_pair(distances[min_node].first, distances[min_node].second + w_d.second);
 				}
-				if (distances[w_d.first].second == distances[min_node].second + w_d.second){
-					distances[w_d.first] = make_pair(distances[min_node].first, distances[min_node].second + w_d.second);
+
+				else if (distances[w_d.first].second == distances[min_node].second + w_d.second){
+					vector<int> path_1 = this->find_path(node.get_id(), w_d.first);
+					vector<int> path_2 = this->find_path(w->get_id(), w_d.first);
+					
+					int last_hop_1 = path_1[path_1.size() - 1];
+					int last_hop_2 = path_2[path_2.size() - 1];
+
+					if (last_hop_2 < last_hop_1){
+						distances[w_d.first] = make_pair(distances[min_node].first, distances[min_node].second + w_d.second);
+					}
+
 				}
 			}
 		}
