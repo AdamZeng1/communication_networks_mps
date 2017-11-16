@@ -43,6 +43,8 @@ class Graph{
 		void apply_messages(char * filename);
 		void apply_changes(char * filename, char * msg_file, bool ls_dv);
 
+		vector<int> find_path(int start_id, int dest_id);
+
 
 };
 
