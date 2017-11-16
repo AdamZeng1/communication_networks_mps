@@ -198,8 +198,8 @@ void Graph::linkstate_init_node(Node & node){
 					int last_hop_1 = path_1[path_1.size() - 1];
 					int last_hop_2 = path_2[path_2.size() - 1];*/
 
-					int last_hop_1 = (this->get_node(d.first)->get_distances() )[n->get_id()];
-					int last_hop_2 = (this->get_node(d.first)->get_distances() )[v->get_id()];
+					int last_hop_1 = (this->get_node(w_d.first)->get_distances() )[node.get_id()].first;
+					int last_hop_2 = (this->get_node(w_d.first)->get_distances() )[w->get_id()].first;
 
 					if (last_hop_2 < last_hop_1){
 						distances[w_d.first] = make_pair(distances[min_node].first, distances[min_node].second + w_d.second);
