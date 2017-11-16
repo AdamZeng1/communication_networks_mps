@@ -273,9 +273,16 @@ bool Graph::distance_vector_process_node(Node * n){
 				else if (distances[neighbor.first].first == distances[d.first].first){
 					vector<int> path_1 = this->find_path(n->get_id(), d.first);
 					vector<int> path_2 = this->find_path(v->get_id(), d.first);
+					if (path_1.size() == 0){
+						distances[d.first] = make_pair(distances[neighbor.first].first, neighbor_cost_to_d);
+						changed = true;
+					}
+					if (path_2.size() == 0){
+						continue;
+					}
 
 					int last_hop_1 = path_1[path_1.size() - 1];
-					int last_hop_2 = path_1[path_2.size() - 1];
+					int last_hop_2 = path_2[path_2.size() - 1];
 
 					if (last_hop_2 < last_hop_1){
 						distances[d.first] = make_pair(distances[neighbor.first].first, neighbor_cost_to_d);
@@ -291,10 +298,16 @@ bool Graph::distance_vector_process_node(Node * n){
 vector<int> Graph::find_path(int start_id, int dest_id){
 	Node * cur_node = this->get_node(start_id);
 	vector<int> path;
+	if ((cur_node->get_distances())[dest_id].second == 99999999){
+		return path;
+	}
 	while(cur_node->get_id() != dest_id){
-				path.push_back(cur_node->get_id());
-				int next_node = (cur_node->get_distances())[dest_id].first;
-				cur_node = this->get_node(next_node);
+		path.push_back(cur_node->get_id());
+		int next_node = (cur_node->get_distances())[dest_id].first;
+		cur_node = this->get_node(next_node);
+		if(cur_node == NULL){
+			break;
+		}
 	}
 	return path;
 }
