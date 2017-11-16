@@ -100,6 +100,9 @@ void Graph::print_topology_entries(){
 		//cout << "<topology entries for node: " << min_num << ">" << endl;
 		map<int, pair<int, int> > distances = min_node->get_distances();
 		for (auto d: distances){
+			if (d.second.second == 99999999){
+				continue;
+			}
 			if (d.first == min_num){
 				out_string = to_string(d.first) + " " + to_string(min_num) + " 0\n";
 				out_file << out_string;
