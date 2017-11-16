@@ -22,24 +22,20 @@ void Graph::apply_messages(char * filename){
 		Node * n = this->get_node(src_id);
 		int path_cost = (n->get_distances())[dest_id].second;
 		if (path_cost == 99999999){
-			//cout << "from " << src_id << " to " << dest_id << " cost infinite hops unreachable message " << msg << endl;
 			out_string = "from " + to_string(src_id) + " to " + to_string(dest_id) + " cost infinite hops unreachable message " + msg + "\n";
 			out_file << out_string;
 			continue;
 		}
 		else{
-			//cout << "from " << src_id << " to " << dest_id << " cost " << path_cost << " hops ";
 			out_string = "from " + to_string(src_id) + " to " + to_string(dest_id) + " cost " + to_string(path_cost) + " hops ";
 			out_file << out_string;
 			Node * cur_node = n;
 			while(cur_node->get_id() != dest_id){
-				//cout << cur_node->get_id() << " ";
 				out_string = to_string(cur_node->get_id()) + " ";
 				out_file << out_string;
 				int next_node = (cur_node->get_distances())[dest_id].first;
 				cur_node = this->get_node(next_node);
 			}
-			//cout << "message " << msg << endl;
 			out_string = "message " + msg + "\n";
 			out_file << out_string;
 		}
@@ -103,15 +99,12 @@ void Graph::print_topology_entries(){
 		// print topology info for min_node: destination | nexthop | pathcost
 		//cout << "<topology entries for node: " << min_num << ">" << endl;
 		map<int, pair<int, int> > distances = min_node->get_distances();
-		// sort distances
 		for (auto d: distances){
 			if (d.first == min_num){
-				//cout << d.first << " " << min_num << " " << 0<< endl;
 				out_string = to_string(d.first) + " " + to_string(min_num) + " 0\n";
 				out_file << out_string;
 			}
 			else{
-				//cout << d.first << " " << d.second.first << " " << d.second.second << endl;
 				out_string = to_string(d.first) + " " + to_string(d.second.first) + " " + to_string(d.second.second) + "\n";
 				out_file << out_string;
 			}
@@ -179,6 +172,9 @@ void Graph::linkstate_init_node(Node & node){
 				}
 
 			}
+		}
+		if (min_node == -1){
+			return;
 		}
 		visited.push_back(min_node);
 		Node * w = this->get_node(min_node);
@@ -328,6 +324,7 @@ void Graph::set_init_distances_DV(map<int, pair<int, int> > & distances){
 		distances[(*it).get_id()] = make_pair(-1, 99999999);
 	}
 }
+
 void Graph::print_nodes(){
 	for(vector<Node>::iterator it = this->nodes.begin(); it != this->nodes.end(); ++it) {
 		cout << "costs for node num: " << it->get_id() << endl;
@@ -346,6 +343,7 @@ vector<Node>::iterator Graph::node_in_graph(int id){
 	}
 	return this->nodes.end();
 }
+
 Node * Graph::add_node(int id){
 	Node * node = this->get_node(id);
 	if(!node){
@@ -355,6 +353,7 @@ Node * Graph::add_node(int id){
 	}
 	return node;
 }
+
 int Graph::remove_node(int id){
 	vector<Node>::iterator it = this->node_in_graph(id);
 	
