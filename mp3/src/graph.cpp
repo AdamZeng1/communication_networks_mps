@@ -100,12 +100,12 @@ void Graph::print_topology_entries(){
 		//cout << "<topology entries for node: " << min_num << ">" << endl;
 		map<int, pair<int, int> > distances = min_node->get_distances();
 		for (auto d: distances){
-			if (d.second.second == 99999999){
-				continue;
-			}
 			if (d.first == min_num){
 				out_string = to_string(d.first) + " " + to_string(min_num) + " 0\n";
 				out_file << out_string;
+			}
+			else if (d.second.second == 99999999){
+				continue;
 			}
 			else{
 				out_string = to_string(d.first) + " " + to_string(d.second.first) + " " + to_string(d.second.second) + "\n";
@@ -282,13 +282,13 @@ bool Graph::distance_vector_process_node(Node * n){
 				else if (distances[neighbor.first].first == distances[d.first].first){
 					vector<int> path_1 = this->find_path(n->get_id(), d.first);
 					vector<int> path_2 = this->find_path(v->get_id(), d.first);
-					if (path_1.size() == 0){
+					/*if (path_1.size() == 0){
 						distances[d.first] = make_pair(distances[neighbor.first].first, neighbor_cost_to_d);
 						changed = true;
 					}
 					if (path_2.size() == 0){
 						continue;
-					}
+					}*/
 
 					int last_hop_1 = path_1[path_1.size() - 1];
 					int last_hop_2 = path_2[path_2.size() - 1];
