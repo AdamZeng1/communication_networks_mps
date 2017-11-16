@@ -192,11 +192,14 @@ void Graph::linkstate_init_node(Node & node){
 				}
 
 				else if (distances[w_d.first].second == distances[min_node].second + w_d.second){
-					vector<int> path_1 = this->find_path(node.get_id(), w_d.first);
+					/*vector<int> path_1 = this->find_path(node.get_id(), w_d.first);
 					vector<int> path_2 = this->find_path(w->get_id(), w_d.first);
 					
 					int last_hop_1 = path_1[path_1.size() - 1];
-					int last_hop_2 = path_2[path_2.size() - 1];
+					int last_hop_2 = path_2[path_2.size() - 1];*/
+
+					int last_hop_1 = (this->get_node(d.first)->get_distances() )[n->get_id()];
+					int last_hop_2 = (this->get_node(d.first)->get_distances() )[v->get_id()];
 
 					if (last_hop_2 < last_hop_1){
 						distances[w_d.first] = make_pair(distances[min_node].first, distances[min_node].second + w_d.second);
@@ -280,8 +283,8 @@ bool Graph::distance_vector_process_node(Node * n){
 					changed = true;
 				}
 				else if (distances[neighbor.first].first == distances[d.first].first){
-					vector<int> path_1 = this->find_path(n->get_id(), d.first);
-					vector<int> path_2 = this->find_path(v->get_id(), d.first);
+					//vector<int> path_1 = this->find_path(n->get_id(), d.first);
+					//vector<int> path_2 = this->find_path(v->get_id(), d.first);
 					/*if (path_1.size() == 0){
 						distances[d.first] = make_pair(distances[neighbor.first].first, neighbor_cost_to_d);
 						changed = true;
@@ -290,8 +293,8 @@ bool Graph::distance_vector_process_node(Node * n){
 						continue;
 					}*/
 
-					int last_hop_1 = path_1[path_1.size() - 1];
-					int last_hop_2 = path_2[path_2.size() - 1];
+					int last_hop_1 = (this->get_node(d.first)->get_distances() )[n->get_id()].first;
+					int last_hop_2 = (this->get_node(d.first)->get_distances() )[v->get_id()].first;
 
 					if (last_hop_2 < last_hop_1){
 						distances[d.first] = make_pair(distances[neighbor.first].first, neighbor_cost_to_d);
