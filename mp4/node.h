@@ -10,6 +10,8 @@ class Node {
 	public:
 		Node(int);
 		int backoff;
-		int num_collisions;
-		int num_transmissions;
+		int num_collisions = 0;
+		int num_transmissions = 0;
+		int collision_count = 0;
+		int num_drops = 0;
 };
