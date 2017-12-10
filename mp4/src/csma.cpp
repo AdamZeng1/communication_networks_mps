@@ -86,12 +86,74 @@ int main(int argc, char** argv) {
 	for (int i =0; i < N; i++){
 		Node node(rand() % R[0]);
 		nodes.push_back(node);
-		cout << node.backoff << endl;
 	}
+	int counter = 0;
 
 	for (int clk = 0; clk < T; clk++){
+		vector <Node *> ready_nodes;
+
+		if (counter == 0){
+			channelOccupied = false;
+		}
+
+		if (!channelOccupied){
+			for(vector<Node>::iterator it = nodes.begin(); it != nodes.end(); ++it) {
+				if (!(*it).backoff){
+					ready_nodes.push_back(&(*it));
+				}
+			}
+			if (ready_nodes.size() == 0){
+				for(vector<Node>::iterator it = nodes.begin(); it != nodes.end(); ++it) {
+					(*it).backoff--;
+				}
+			}
+			else if (ready_nodes.size() == 1){
+				channelOccupied = true;
+				counter = L;
+				Node * node = ready_nodes[0];
+				node->num_transmissions++;
+				node->collision_count = 0;
+				node->backoff = rand() % R[0];
+			}
+			else{
+				num_collisions += 1;
+				for(vector<Node *>::iterator it = ready_nodes.begin(); it != ready_nodes.end(); ++it) {
+					Node * node = (*it);
+					node->collision_count++;
+					if (node->collision_count == M){
+						node->num_drops++;
+						node->collision_count = 0;
+						node->backoff =  rand() % R[0];
+					}
+					else {
+						if (node->collision_count >= R.size()){
+							node->backoff = rand() % R[R.size() - 1];
+						}
+						else{
+							node->backoff = rand() % R[node->collision_count];
+						}
+					}
+				}
+			}
+		}
+		else{
+			counter--;
+		}
 
 	}
+
+	for(vector<Node>::iterator it = nodes.begin(); it != nodes.end(); ++it) {
+		Node * node = &(*it);
+		num_transmissions += node->num_transmissions;
+	}
+
+
+	float channel_utilization = num_transmissions * L / T;
+	float channel_idle = 1.0 - channel_utilization;
+
+	cout << channel_utilization << endl;
+	cout << channel_idle << endl;
+	cout << num_collisions << endl;
 
 	return 0;
 }
