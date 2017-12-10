@@ -72,6 +72,11 @@ void getInputs(string input_file){
 }
 
 int main(int argc, char** argv) {
+
+	if (argc < 2){
+		cout << "Please provide input file" << endl;
+		return 0;
+	}
 	ifstream inFile;
 	inFile.open(argv[1]);
 	stringstream file_stream;
@@ -122,6 +127,7 @@ int main(int argc, char** argv) {
 					node->collision_count++;
 					if (node->collision_count == M){
 						node->num_drops++;
+						node->num_collisions++;
 						node->collision_count = 0;
 						node->backoff =  rand() % R[0];
 					}
@@ -142,18 +148,40 @@ int main(int argc, char** argv) {
 
 	}
 
+	int total_collisions = 0;
+	float collision_sq = 0;
+	float collision_mean;
+
+	float transmission_sq = 0;
+	float transmission_mean;
+
 	for(vector<Node>::iterator it = nodes.begin(); it != nodes.end(); ++it) {
 		Node * node = &(*it);
+		total_collisions += node->num_collisions;
 		num_transmissions += node->num_transmissions;
 	}
 
+	collision_mean = float(total_collisions) / float(N);
+	transmission_mean = float(num_transmissions) / float(N);
 
-	float channel_utilization = num_transmissions * L / T;
-	float channel_idle = 1.0 - channel_utilization;
+	for(vector<Node>::iterator it = nodes.begin(); it != nodes.end(); ++it) {
+		Node * node = &(*it);
+		collision_sq += float(node->num_collisions - collision_mean) * float(node->num_collisions - collision_mean);
+		transmission_sq += float(node->num_transmissions - transmission_mean) * float(node->num_transmissions - transmission_mean);
+	}
 
+	float channel_utilization = float(num_transmissions) * float(L) / float(T);
+	float channel_idle = 1.0 - float(channel_utilization);
+
+	cout << collision_mean << endl;
+	cout << transmission_mean << endl;
+	cout << "answers: " << endl;
 	cout << channel_utilization << endl;
 	cout << channel_idle << endl;
 	cout << num_collisions << endl;
+	cout << transmission_sq/float(N) << endl;
+	cout << collision_sq/float(N) << endl;
+
 
 	return 0;
 }
