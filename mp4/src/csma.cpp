@@ -84,12 +84,15 @@ int main(int argc, char** argv) {
 	string input_file = file_stream.str();
 	inFile.close();
 
+
 	getInputs(input_file);
 
 	vector<Node> nodes;
 
+	srand (time(NULL));
+
 	for (int i =0; i < N; i++){
-		Node node(rand() % R[0]);
+		Node node(rand() % (R[0] + 1));
 		nodes.push_back(node);
 	}
 	int counter = 0;
@@ -118,7 +121,7 @@ int main(int argc, char** argv) {
 				Node * node = ready_nodes[0];
 				node->num_transmissions++;
 				node->collision_count = 0;
-				node->backoff = rand() % R[0];
+				node->backoff = rand() % (R[0] + 1);
 			}
 			else{
 				num_collisions += 1;
@@ -129,14 +132,14 @@ int main(int argc, char** argv) {
 						node->num_drops++;
 						node->num_collisions++;
 						node->collision_count = 0;
-						node->backoff =  rand() % R[0];
+						node->backoff =  rand() % (R[0] + 1);
 					}
 					else {
 						if (node->collision_count >= R.size()){
-							node->backoff = rand() % R[R.size() - 1];
+							node->backoff = rand() % (R[R.size() - 1] + 1);
 						}
 						else{
-							node->backoff = rand() % R[node->collision_count];
+							node->backoff = rand() % (R[node->collision_count] + 1);
 						}
 					}
 				}
@@ -171,16 +174,13 @@ int main(int argc, char** argv) {
 	}
 
 	float channel_utilization = float(num_transmissions) * float(L) / float(T);
-	float channel_idle = 1.0 - float(channel_utilization);
+	float channel_idle = 1.0 - float(channel_utilization) - float(num_collisions)/float(T);
 
-	cout << collision_mean << endl;
-	cout << transmission_mean << endl;
-	cout << "answers: " << endl;
-	cout << channel_utilization << endl;
-	cout << channel_idle << endl;
-	cout << num_collisions << endl;
-	cout << transmission_sq/float(N) << endl;
-	cout << collision_sq/float(N) << endl;
+	cout << "Channel utilization (in percentage): " << channel_utilization << endl;
+	cout << "Channel idle fraction (in percentage): " << channel_idle << endl;
+	cout << "Total number of collisions: " << num_collisions << endl;
+	cout << "Variance in number of successful transmissions (across all nodes): " << transmission_sq/float(N) << endl;
+	cout << "Variance in number of collisions (across all nodes): " << collision_sq/float(N) << endl;
 
 
 	return 0;
